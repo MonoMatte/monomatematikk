@@ -3,6 +3,18 @@ import sqlite3
 conn = sqlite3.connect("database.db")
 cursor = conn.cursor()
 
+# 1. СОЗДАЕМ ТАБЛИЦУ ПОЛЬЗОВАТЕЛЕЙ (добавил все нужные колонки)
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    role TEXT DEFAULT 'user',
+    created_at TEXT DEFAULT (datetime('now'))
+)
+""")
+
+# 2. ТАБЛИЦА ПРОГРЕССА
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS progress (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -13,13 +25,7 @@ CREATE TABLE IF NOT EXISTS progress (
 )
 """)
 
-# Legg til registreringsdato på users hvis den ikke finnes
-try:
-    cursor.execute("ALTER TABLE users ADD COLUMN created_at TEXT DEFAULT (datetime('now'))")
-except:
-    pass
-
-# Kunngjøringer fra admin
+# 3. ТАБЛИЦА УВЕДОМЛЕНИЙ
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS kunngjøringer (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -30,5 +36,4 @@ CREATE TABLE IF NOT EXISTS kunngjøringer (
 
 conn.commit()
 conn.close()
-
-print("Database oppdatert!")
+print("База данных полностью пересоздана и готова!")
