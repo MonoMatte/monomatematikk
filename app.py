@@ -5,6 +5,18 @@ from functools import wraps
 import sqlite3
 
 
+import os
+
+# Получаем полный путь к папке, где лежит твой файл app.py
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATABASE = os.path.join(BASE_DIR, 'database.db')
+
+def get_db():
+    conn = sqlite3.connect(DATABASE) # Теперь путь всегда будет точным
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
 app = Flask(__name__)
 app.secret_key = "noe_hemmelig_her"
 
