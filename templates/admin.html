@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin – Mono</title>
+    <link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body>
+
+<div class="db-page">
+
+    <!-- HEADER -->
+    <div class="db-header">
+        <span class="db-logo"> Mono – Admin</span>
+        <div class="db-header-right">
+            <a href="/dashboard" class="db-nav-btn">← Dashboard</a>
+            <a href="/logout" class="db-nav-btn db-nav-logout">Logg ut</a>
+        </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="db-stats" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 35px;">
+        <div class="db-stat-card">
+            <div class="db-stat-icon">👥</div>
+            <div class="db-stat-number">{{ totalt_brukere }}</div>
+            <div class="db-stat-label">Totalt antall brukere</div>
+        </div>
+        <div class="db-stat-card">
+            <div class="db-stat-icon">✅</div>
+            <div class="db-stat-number">{{ totalt_løste }}</div>
+            <div class="db-stat-label">Totalt løste oppgaver</div>
+        </div>
+    </div>
+
+    <!-- KUNNGJØRING -->
+    <div class="admin-table-card" style="margin-bottom: 25px;">
+        <h2 class="admin-table-title">📢 Kunngjøring til alle brukere</h2>
+        {% if kunngjøring %}
+            <div class="admin-kunngjøring-preview">
+                Nåværende melding: <strong>{{ kunngjøring.melding }}</strong>
+            </div>
+        {% endif %}
+        <form method="POST" action="/admin/kunngjøring" style="display: flex; gap: 12px; margin-top: 12px;">
+            <input type="text" name="melding" placeholder="Skriv en melding til alle brukere..."
+                   class="admin-input" value="{{ kunngjøring.melding if kunngjøring else '' }}">
+            <button type="submit" class="admin-action-btn admin-btn-blue">📢 Send</button>
+        </form>
+    </div>
+
+    <!-- SØK -->
+    <div class="admin-table-card">
+        <h2 class="admin-table-title">👤 Brukere ({{ users|length }} vist)</h2>
+
+        <form method="GET" action="/admin" style="display: flex; gap: 12px; margin-bottom: 20px;">
+            <input type="text" name="søk" placeholder="🔍 Søk etter brukernavn..."
+                   class="admin-input" value="{{ søk }}">
+            <button type="submit" class="admin-action-btn admin-btn-blue">Søk</button>
+            {% if søk %}
+                <a href="/admin" class="admin-action-btn" style="background:#eee; color:#333;">✕ Fjern søk</a>
+            {% endif %}
+        </form>
+
+        <!-- TABELL -->
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Brukernavn</th>
+                    <th>Rolle</th>
+                    <th>Registrert</th>
+                    <th>Løste</th>
+                    <th>Endre rolle</th>
+                    <th>Nullstill</th>
+                    <th>Slett</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr class="{{ 'admin-row-self' if u.id == current_user_id else '' }}">
+                    <td>#{{ u.id }}</td>
+                    <td>
+                        <strong>{{ u.username }}</strong>
+                        {% if u.id == current_user_id %}
+                            <span class="admin-badge-you">deg</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="admin-badge {{ 'admin-badge-admin' if u.role == 'admin' else 'admin-badge-user' }}">
+                            {{ u.role }}
+                        </span>
+                    </td>
+                    <td style="color:#888; font-size:0.85rem;">
+                        {{ u.created_at[:10] if u.created_at else "—" }}
+                    </td>
+                    <td><strong>{{ u.løste }}</strong></td>
+                    <td>
+                        {% if u.id != current_user_id %}
+                        <form method="POST" action="/admin/rolle/{{ u.id }}">
+                            <select name="rolle" class="admin-select" onchange="this.form.submit()">
+                                <option value="user" {{ 'selected' if u.role == 'user' }}>user</option>
+                                <option value="admin" {{ 'selected' if u.role == 'admin' }}>admin</option>
+                            </select>
+                        </form>
+                        {% else %}
+                            <span style="color:#aaa;">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if u.id != current_user_id %}
+                        <form method="POST" action="/admin/nullstill/{{ u.id }}"
+                              onsubmit="return confirm('Nullstill all progresjon for {{ u.username }}?')">
+                            <button type="submit" class="admin-action-btn admin-btn-orange">🔄 Nullstill</button>
+                        </form>
+                        {% else %}
+                            <span style="color:#aaa;">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if u.id != current_user_id %}
+                        <form method="POST" action="/admin/slett/{{ u.id }}"
+                              onsubmit="return confirm('Sikker på at du vil slette {{ u.username }}?')">
+                            <button type="submit" class="admin-delete-btn">🗑 Slett</button>
+                        </form>
+                        {% else %}
+                            <span style="color:#aaa;">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>
