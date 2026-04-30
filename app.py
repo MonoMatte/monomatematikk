@@ -24,6 +24,7 @@ def get_db():
     return conn
 
 #REGISTRERING
+# ИСПРАВЛЕННАЯ РЕГИСТРАЦИЯ
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
@@ -32,14 +33,15 @@ def register():
 
         conn = get_db()
         try:
+            # Добавляем 'user' как роль по умолчанию прямо в запрос
             conn.execute(
-                "INSERT INTO users (username, password_hash) VALUES (?, ?)",
-                (username, generate_password_hash(password))
+                "INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)",
+                (username, generate_password_hash(password), 'user')
             )
-            conn.commit()
-        except:
+            conn.commit() # Сохраняем изменения в базе
+        except Exception as e:
+            print(f"Ошибка регистрации: {e}") # Увидим ошибку в терминале, если что-то пойдет не так
             return render_template("register.html", error="Brukernavn er allerede tatt")
-
 
         return redirect("/login")
 
