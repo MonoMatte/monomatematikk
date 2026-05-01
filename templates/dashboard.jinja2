@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <title>Dashboard – Mono</title>
     <link rel="stylesheet" href="/static/css/main.css">
+    <style>
+        /* Legger til litt ekstra stil for å skille temaene */
+        .topic-section { margin-top: 40px; padding: 20px; background: #f8f9fa; border-radius: 15px; }
+        .topic-title { margin-bottom: 20px; color: #333; border-left: 5px solid #7367f0; padding-left: 15px; }
+        .section-divider { border: 0; height: 1px; background: #ddd; margin: 40px 0; }
+    </style>
 </head>
 <body>
 
@@ -42,38 +48,82 @@
     </div>
     {% endif %}
 
-    <!-- STATS -->
-    <div class="db-stats">
-        <div class="db-stat-card">
-            <div class="db-stat-icon">🏆</div>
-            <div class="db-stat-number">{{ total }}</div>
-            <div class="db-stat-label">Totalt løste</div>
-        </div>
+    <!-- SEKSJON: REGNEREKKEFØLGE -->
+    <div class="topic-section">
+        <h2 class="topic-title">Regnerekkefølge</h2>
+        <div class="db-stats">
+            <div class="db-stat-card">
+                <div class="db-stat-icon">🏆</div>
+                <div class="db-stat-number">{{ nivaa1 + nivaa2 + nivaa3 }}</div>
+                <div class="db-stat-label">Løst totalt</div>
+            </div>
 
-        <div class="db-stat-card">
-            <div class="db-stat-icon">🟢</div>
-            <div class="db-stat-number">{{ nivaa1 }}<span>/30</span></div>
-            <div class="db-stat-label">Nivå 1</div>
-            <div class="db-progress-bar">
-                <div class="db-progress-fill" style="width: {{ (nivaa1 / 30 * 100)|int }}%; background: #28c76f;"></div>
+            <div class="db-stat-card">
+                <div class="db-stat-icon">🟢</div>
+                <div class="db-stat-number">{{ nivaa1 }}<span>/30</span></div>
+                <div class="db-stat-label">Nivå 1</div>
+                <div class="db-progress-bar">
+                    <div class="db-progress-fill" style="width: {{ (nivaa1 / 30 * 100)|int }}%; background: #28c76f;"></div>
+                </div>
+            </div>
+
+            <div class="db-stat-card">
+                <div class="db-stat-icon">🟡</div>
+                <div class="db-stat-number">{{ nivaa2 }}<span>/30</span></div>
+                <div class="db-stat-label">Nivå 2</div>
+                <div class="db-progress-bar">
+                    <div class="db-progress-fill" style="width: {{ (nivaa2 / 30 * 100)|int }}%; background: #ff9f43;"></div>
+                </div>
+            </div>
+
+            <div class="db-stat-card">
+                <div class="db-stat-icon">🔴</div>
+                <div class="db-stat-number">{{ nivaa3 }}<span>/30</span></div>
+                <div class="db-stat-label">Nivå 3</div>
+                <div class="db-progress-bar">
+                    <div class="db-progress-fill" style="width: {{ (nivaa3 / 30 * 100)|int }}%; background: #ea5455;"></div>
+                </div>
             </div>
         </div>
+    </div>
 
-        <div class="db-stat-card">
-            <div class="db-stat-icon">🟡</div>
-            <div class="db-stat-number">{{ nivaa2 }}<span>/30</span></div>
-            <div class="db-stat-label">Nivå 2</div>
-            <div class="db-progress-bar">
-                <div class="db-progress-fill" style="width: {{ (nivaa2 / 30 * 100)|int }}%; background: #ff9f43;"></div>
+    <hr class="section-divider">
+
+    <!-- SEKSJON: HELE TALL -->
+    <div class="topic-section">
+        <h2 class="topic-title">Hele tall</h2>
+        <div class="db-stats">
+            <div class="db-stat-card">
+                <div class="db-stat-icon">🏆</div>
+                <div class="db-stat-number">{{ hnivaa1 + hnivaa2 + hnivaa3 }}</div>
+                <div class="db-stat-label">Løst totalt</div>
             </div>
-        </div>
 
-        <div class="db-stat-card">
-            <div class="db-stat-icon">🔴</div>
-            <div class="db-stat-number">{{ nivaa3 }}<span>/30</span></div>
-            <div class="db-stat-label">Nivå 3</div>
-            <div class="db-progress-bar">
-                <div class="db-progress-fill" style="width: {{ (nivaa3 / 30 * 100)|int }}%; background: #ea5455;"></div>
+            <div class="db-stat-card">
+                <div class="db-stat-icon">🟢</div>
+                <div class="db-stat-number">{{ hnivaa1 }}<span>/30</span></div>
+                <div class="db-stat-label">Nivå 1</div>
+                <div class="db-progress-bar">
+                    <div class="db-progress-fill" style="width: {{ (hnivaa1 / 30 * 100)|int }}%; background: #28c76f;"></div>
+                </div>
+            </div>
+
+            <div class="db-stat-card">
+                <div class="db-stat-icon">🟡</div>
+                <div class="db-stat-number">{{ hnivaa2 }}<span>/30</span></div>
+                <div class="db-stat-label">Nivå 2</div>
+                <div class="db-progress-bar">
+                    <div class="db-progress-fill" style="width: {{ (hnivaa2 / 30 * 100)|int }}%; background: #ff9f43;"></div>
+                </div>
+            </div>
+
+            <div class="db-stat-card">
+                <div class="db-stat-icon">🔴</div>
+                <div class="db-stat-number">{{ hnivaa3 }}<span>/30</span></div>
+                <div class="db-stat-label">Nivå 3</div>
+                <div class="db-progress-bar">
+                    <div class="db-progress-fill" style="width: {{ (hnivaa3 / 30 * 100)|int }}%; background: #ea5455;"></div>
+                </div>
             </div>
         </div>
     </div>
