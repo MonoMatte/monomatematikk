@@ -1,0 +1,24 @@
+{% extends "oppgaver_layout.html" %}
+{% block title %}Desimaltall – Nivå 1{% endblock %}
+{% block task_content %}
+<a href="/oppgaver/desimaltall" class="close-btn">✕</a>
+<h1>Desimaltall – Nivå 1</h1>
+<p>Oppgave {{ nummer }} av {{ total }}</p>
+<div class="task-box">
+    <p class="task-question-title">Oppgave:</p>
+    <p class="task-question-text">{{ oppgave }}</p>
+    <p style="font-size:0.85rem; color:#888;">💡 Bruk komma som desimaltegn, f.eks. 3,5</p>
+    <form method="POST" class="task-form">
+        <input type="text" name="svar" class="task-input" placeholder="Skriv svaret ditt (eks: 3,5)">
+        <button class="task-submit">Sjekk svar</button>
+    </form>
+    {% if resultat %}
+        <div class="task-result {% if riktig %}correct-glow{% else %}wrong-glow{% endif %}">
+            {{ resultat }}
+        </div>
+    {% endif %}
+</div>
+{% if riktig %}
+    <a href="?n={{ nummer + 1 }}" class="next-btn">Neste oppgave →</a>
+{% endif %}
+{% endblock %}
