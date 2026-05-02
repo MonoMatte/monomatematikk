@@ -659,6 +659,192 @@ def hele_tall_nivaa3_route():
     )
 
 
+# ─────────────────────────────────────────────
+# DESIMALTALL
+# ─────────────────────────────────────────────
+
+@app.route('/oppgaver/desimaltall')
+@login_required
+def desimaltall():
+    return render_template('oppgaver_desimaltall.html')
+
+
+# DESIMALTALL NIVÅ 1 – addisjon og subtraksjon (ID 7001–7030)
+desimaltall_nivaa1_oppgaver = [
+    ("1,2 + 2,3", "3,5"), ("4,5 - 1,2", "3,3"), ("3,7 + 2,1", "5,8"),
+    ("6,8 - 3,4", "3,4"), ("2,5 + 1,5", "4,0"), ("7,3 - 4,1", "3,2"),
+    ("0,6 + 0,8", "1,4"), ("5,9 - 2,7", "3,2"), ("3,4 + 4,4", "7,8"),
+    ("8,7 - 5,3", "3,4"), ("1,8 + 3,6", "5,4"), ("9,5 - 4,2", "5,3"),
+    ("2,4 + 5,3", "7,7"), ("6,1 - 2,8", "3,3"), ("4,7 + 1,9", "6,6"),
+    ("7,4 - 3,6", "3,8"), ("0,9 + 0,7", "1,6"), ("5,2 - 1,4", "3,8"),
+    ("3,6 + 2,8", "6,4"), ("8,3 - 4,7", "3,6"), ("1,1 + 7,9", "9,0"),
+    ("6,5 - 2,9", "3,6"), ("4,2 + 3,9", "8,1"), ("9,1 - 5,6", "3,5"),
+    ("2,7 + 4,6", "7,3"), ("7,8 - 3,9", "3,9"), ("0,5 + 0,9", "1,4"),
+    ("5,6 - 2,3", "3,3"), ("3,3 + 5,8", "9,1"), ("8,4 - 4,5", "3,9"),
+]
+
+
+@app.route('/oppgaver/Desimaltall/nivaa1', methods=['GET', 'POST'])
+@login_required
+def desimaltall_nivaa1_route():
+    oppgaver = desimaltall_nivaa1_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 7000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Desimaltall – Nivå 1", melding="Du fullførte nivå 1! Bra jobba 🎉")
+
+    oppgave, fasit = oppgaver[nummer - 1]
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        svar = request.form["svar"].strip().replace(".", ",")
+        if svar == fasit:
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        elif svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        else:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 7000 + i, "link": f"/oppgaver/Desimaltall/nivaa1?n={i}"} for i in range(1, total + 1)]
+    return render_template("desimaltall_nivaa1.html",
+        oppgave=oppgave, nummer=nummer, total=total,
+        resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny,
+        riktige_oppgaver=riktige_oppgaver
+    )
+
+
+# DESIMALTALL NIVÅ 2 – multiplikasjon og divisjon (ID 8001–8030)
+desimaltall_nivaa2_oppgaver = [
+    ("1,2 ⋅ 3", "3,6"), ("4,8 : 2", "2,4"), ("2,5 ⋅ 4", "10,0"),
+    ("7,2 : 3", "2,4"), ("3,4 ⋅ 2", "6,8"), ("9,6 : 4", "2,4"),
+    ("1,5 ⋅ 6", "9,0"), ("8,4 : 7", "1,2"), ("2,3 ⋅ 3", "6,9"),
+    ("6,5 : 5", "1,3"), ("4,2 ⋅ 2", "8,4"), ("7,8 : 6", "1,3"),
+    ("1,4 ⋅ 5", "7,0"), ("9,9 : 9", "1,1"), ("3,6 ⋅ 3", "10,8"),
+    ("8,8 : 8", "1,1"), ("2,4 ⋅ 4", "9,6"), ("7,5 : 5", "1,5"),
+    ("1,8 ⋅ 5", "9,0"), ("6,4 : 4", "1,6"), ("3,2 ⋅ 3", "9,6"),
+    ("9,1 : 7", "1,3"), ("2,6 ⋅ 4", "10,4"), ("8,1 : 9", "0,9"),
+    ("4,5 ⋅ 2", "9,0"), ("7,0 : 5", "1,4"), ("1,6 ⋅ 6", "9,6"),
+    ("9,6 : 8", "1,2"), ("3,5 ⋅ 4", "14,0"), ("8,4 : 6", "1,4"),
+]
+
+
+@app.route('/oppgaver/Desimaltall/nivaa2', methods=['GET', 'POST'])
+@login_required
+def desimaltall_nivaa2_route():
+    oppgaver = desimaltall_nivaa2_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 8000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Desimaltall – Nivå 2", melding="Du fullførte nivå 2! Sterkt jobba 🔥")
+
+    oppgave, fasit = oppgaver[nummer - 1]
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        svar = request.form["svar"].strip().replace(".", ",")
+        if svar == fasit:
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        elif svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        else:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 8000 + i, "link": f"/oppgaver/Desimaltall/nivaa2?n={i}"} for i in range(1, total + 1)]
+    return render_template("desimaltall_nivaa2.html",
+        oppgave=oppgave, nummer=nummer, total=total,
+        resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny,
+        riktige_oppgaver=riktige_oppgaver
+    )
+
+
+# DESIMALTALL NIVÅ 3 – blandede operasjoner (ID 9001–9030)
+desimaltall_nivaa3_oppgaver = [
+    ("1,5 + 2,3 ⋅ 2", "6,1"), ("(3,2 + 1,8) ⋅ 2", "10,0"),
+    ("4,8 : 2 + 1,6", "4,0"), ("(5,4 - 2,4) ⋅ 3", "9,0"),
+    ("2,5 ⋅ 4 - 3,2", "6,8"), ("(1,6 + 2,4) : 2", "2,0"),
+    ("6,3 - 1,2 ⋅ 3", "2,7"), ("(4,5 + 1,5) ⋅ 2", "12,0"),
+    ("9,6 : 4 + 2,3", "4,7"), ("(7,2 - 3,2) : 2", "2,0"),
+    ("3,4 ⋅ 2 + 1,8", "8,6"), ("(2,8 + 4,2) ⋅ 2", "14,0"),
+    ("8,5 : 5 - 0,3", "1,4"), ("(6,0 - 2,4) ⋅ 3", "10,8"),
+    ("1,2 ⋅ 5 + 2,4", "8,4"), ("(3,6 + 2,4) : 3", "2,0"),
+    ("7,5 - 2,4 ⋅ 2", "2,7"), ("(5,6 + 1,4) ⋅ 2", "14,0"),
+    ("9,0 : 6 + 3,5", "5,0"), ("(8,4 - 5,4) ⋅ 4", "12,0"),
+    ("2,4 ⋅ 3 - 1,2", "6,0"), ("(1,8 + 5,2) ⋅ 2", "14,0"),
+    ("6,6 : 3 + 2,8", "5,0"), ("(9,0 - 4,5) ⋅ 2", "9,0"),
+    ("4,6 ⋅ 2 - 3,2", "6,0"), ("(2,4 + 3,6) : 2", "3,0"),
+    ("5,4 - 1,2 ⋅ 3", "1,8"), ("(7,2 + 0,8) ⋅ 2", "16,0"),
+    ("8,4 : 4 + 4,5", "6,6"), ("(6,3 - 3,3) ⋅ 5", "15,0"),
+]
+
+
+@app.route('/oppgaver/Desimaltall/nivaa3', methods=['GET', 'POST'])
+@login_required
+def desimaltall_nivaa3_route():
+    oppgaver = desimaltall_nivaa3_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 9000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Desimaltall – Nivå 3", melding="Du fullførte nivå 3! Monstersterkt 💪🔥")
+
+    oppgave, fasit = oppgaver[nummer - 1]
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        svar = request.form["svar"].strip().replace(".", ",")
+        if svar == fasit:
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        elif svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        else:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 9000 + i, "link": f"/oppgaver/Desimaltall/nivaa3?n={i}"} for i in range(1, total + 1)]
+    return render_template("desimaltall_nivaa3.html",
+        oppgave=oppgave, nummer=nummer, total=total,
+        resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny,
+        riktige_oppgaver=riktige_oppgaver
+    )
+
+
 # START SERVER
 if __name__ == '__main__':
     app.run(debug=True)
