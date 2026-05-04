@@ -845,6 +845,218 @@ def desimaltall_nivaa3_route():
     )
 
 
+# ─────────────────────────────────────────────
+# PROSENT
+# ─────────────────────────────────────────────
+
+@app.route('/oppgaver/prosent')
+@login_required
+def prosent():
+    return render_template('oppgaver_prosent.html')
+
+
+# PROSENT NIVÅ 1 – finn prosenten av et tall (ID 10001–10030)
+prosent_nivaa1_oppgaver = [
+    ("Hva er 10% av 80?", "8"), ("Hva er 50% av 60?", "30"),
+    ("Hva er 25% av 40?", "10"), ("Hva er 20% av 150?", "30"),
+    ("Hva er 75% av 200?", "150"), ("Hva er 10% av 350?", "35"),
+    ("Hva er 50% av 90?", "45"), ("Hva er 25% av 120?", "30"),
+    ("Hva er 20% av 250?", "50"), ("Hva er 10% av 500?", "50"),
+    ("Hva er 30% av 100?", "30"), ("Hva er 40% av 50?", "20"),
+    ("Hva er 15% av 200?", "30"), ("Hva er 60% av 150?", "90"),
+    ("Hva er 5% av 400?", "20"), ("Hva er 80% av 75?", "60"),
+    ("Hva er 25% av 80?", "20"), ("Hva er 50% av 300?", "150"),
+    ("Hva er 10% av 1000?", "100"), ("Hva er 20% av 400?", "80"),
+    ("Hva er 30% av 200?", "60"), ("Hva er 75% av 400?", "300"),
+    ("Hva er 40% av 250?", "100"), ("Hva er 5% av 600?", "30"),
+    ("Hva er 15% av 300?", "45"), ("Hva er 60% av 500?", "300"),
+    ("Hva er 25% av 160?", "40"), ("Hva er 10% av 750?", "75"),
+    ("Hva er 50% av 480?", "240"), ("Hva er 20% av 600?", "120"),
+]
+
+
+@app.route('/oppgaver/Prosent/nivaa1', methods=['GET', 'POST'])
+@login_required
+def prosent_nivaa1_route():
+    oppgaver = prosent_nivaa1_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 10000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Prosent – Nivå 1", melding="Du fullførte nivå 1! Bra jobba 🎉")
+
+    oppgave, fasit = oppgaver[nummer - 1]
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        svar = request.form["svar"].strip()
+        if svar == fasit:
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        elif svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        else:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 10000 + i, "link": f"/oppgaver/Prosent/nivaa1?n={i}"} for i in range(1, total + 1)]
+    return render_template("prosent_nivaa1.html",
+        oppgave=oppgave, nummer=nummer, total=total,
+        resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny,
+        riktige_oppgaver=riktige_oppgaver
+    )
+
+
+# PROSENT NIVÅ 2 – finn hvor mange prosent (ID 11001–11030)
+prosent_nivaa2_oppgaver = [
+    ("Hvor mange prosent er 10 av 100?", "10"), ("Hvor mange prosent er 25 av 50?", "50"),
+    ("Hvor mange prosent er 30 av 150?", "20"), ("Hvor mange prosent er 12 av 60?", "20"),
+    ("Hvor mange prosent er 45 av 180?", "25"), ("Hvor mange prosent er 8 av 40?", "20"),
+    ("Hvor mange prosent er 60 av 200?", "30"), ("Hvor mange prosent er 15 av 75?", "20"),
+    ("Hvor mange prosent er 18 av 90?", "20"), ("Hvor mange prosent er 40 av 160?", "25"),
+    ("Hvor mange prosent er 6 av 30?", "20"), ("Hvor mange prosent er 50 av 250?", "20"),
+    ("Hvor mange prosent er 35 av 140?", "25"), ("Hvor mange prosent er 9 av 45?", "20"),
+    ("Hvor mange prosent er 72 av 360?", "20"), ("Hvor mange prosent er 25 av 100?", "25"),
+    ("Hvor mange prosent er 14 av 70?", "20"), ("Hvor mange prosent er 80 av 400?", "20"),
+    ("Hvor mange prosent er 3 av 15?", "20"), ("Hvor mange prosent er 55 av 220?", "25"),
+    ("Hvor mange prosent er 16 av 80?", "20"), ("Hvor mange prosent er 90 av 300?", "30"),
+    ("Hvor mange prosent er 21 av 105?", "20"), ("Hvor mange prosent er 48 av 240?", "20"),
+    ("Hvor mange prosent er 7 av 35?", "20"), ("Hvor mange prosent er 120 av 400?", "30"),
+    ("Hvor mange prosent er 24 av 120?", "20"), ("Hvor mange prosent er 36 av 180?", "20"),
+    ("Hvor mange prosent er 5 av 25?", "20"), ("Hvor mange prosent er 100 av 500?", "20"),
+]
+
+
+@app.route('/oppgaver/Prosent/nivaa2', methods=['GET', 'POST'])
+@login_required
+def prosent_nivaa2_route():
+    oppgaver = prosent_nivaa2_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 11000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Prosent – Nivå 2", melding="Du fullførte nivå 2! Sterkt jobba 🔥")
+
+    oppgave, fasit = oppgaver[nummer - 1]
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        svar = request.form["svar"].strip().replace("%", "")
+        if svar == fasit:
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        elif svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        else:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 11000 + i, "link": f"/oppgaver/Prosent/nivaa2?n={i}"} for i in range(1, total + 1)]
+    return render_template("prosent_nivaa2.html",
+        oppgave=oppgave, nummer=nummer, total=total,
+        resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny,
+        riktige_oppgaver=riktige_oppgaver
+    )
+
+
+# PROSENT NIVÅ 3 – prosentvis økning og nedgang (ID 12001–12030)
+prosent_nivaa3_oppgaver = [
+    ("En jakke koster 400 kr. Den er satt ned 25%. Hva er den nye prisen?", "300"),
+    ("En sykkel koster 1000 kr. Den øker med 10%. Hva er den nye prisen?", "1100"),
+    ("En telefon koster 800 kr. Den er satt ned 20%. Hva er den nye prisen?", "640"),
+    ("En bok koster 200 kr. Den øker med 50%. Hva er den nye prisen?", "300"),
+    ("En skjorte koster 300 kr. Den er satt ned 30%. Hva er den nye prisen?", "210"),
+    ("En datamaskin koster 5000 kr. Den er satt ned 15%. Hva er den nye prisen?", "4250"),
+    ("En bil koster 200 000 kr. Den øker med 5%. Hva er den nye prisen?", "210000"),
+    ("Et klesplagg koster 600 kr. Den er satt ned 40%. Hva er den nye prisen?", "360"),
+    ("En leilighet koster 2 000 000 kr. Den øker med 10%. Hva er den nye prisen?", "2200000"),
+    ("En lampe koster 500 kr. Den er satt ned 10%. Hva er den nye prisen?", "450"),
+    ("En restaurant øker prisene med 8%. En rett kostet 150 kr. Hva koster den nå?", "162"),
+    ("En vare koster 250 kr. Den er satt ned 20%. Hva er den nye prisen?", "200"),
+    ("En reise koster 3000 kr. Den øker med 15%. Hva er den nye prisen?", "3450"),
+    ("En TV koster 2000 kr. Den er satt ned 25%. Hva er den nye prisen?", "1500"),
+    ("En klubb øker kontingenten med 20%. Den kostet 500 kr. Hva koster den nå?", "600"),
+    ("En genser koster 400 kr. Den er satt ned 50%. Hva er den nye prisen?", "200"),
+    ("En leiepris øker med 12%. Den var 8000 kr. Hva er den nye leieprisen?", "8960"),
+    ("En sko koster 900 kr. Den er satt ned 10%. Hva er den nye prisen?", "810"),
+    ("En kurs koster 1200 kr. Den øker med 25%. Hva er den nye prisen?", "1500"),
+    ("En bil koster 150 000 kr. Den er satt ned 30%. Hva er den nye prisen?", "105000"),
+    ("En vare koster 80 kr. Den øker med 75%. Hva er den nye prisen?", "140"),
+    ("Et abonnement koster 99 kr. Det øker med 10%. Hva koster det nå?", "108,9"),
+    ("En hytte koster 1 500 000 kr. Den øker med 20%. Hva er den nye prisen?", "1800000"),
+    ("En konsert koster 350 kr. Den er satt ned 20%. Hva er den nye prisen?", "280"),
+    ("En kino koster 120 kr. Den øker med 25%. Hva er den nye prisen?", "150"),
+    ("En sykkel koster 2500 kr. Den er satt ned 15%. Hva er den nye prisen?", "2125"),
+    ("En avis koster 40 kr. Den øker med 50%. Hva er den nye prisen?", "60"),
+    ("En dress koster 3000 kr. Den er satt ned 35%. Hva er den nye prisen?", "1950"),
+    ("En gave koster 180 kr. Den øker med 10%. Hva er den nye prisen?", "198"),
+    ("En stol koster 1200 kr. Den er satt ned 25%. Hva er den nye prisen?", "900"),
+]
+
+
+@app.route('/oppgaver/Prosent/nivaa3', methods=['GET', 'POST'])
+@login_required
+def prosent_nivaa3_route():
+    oppgaver = prosent_nivaa3_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 12000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Prosent – Nivå 3", melding="Du fullførte nivå 3! Monstersterkt 💪🔥")
+
+    oppgave, fasit = oppgaver[nummer - 1]
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        svar = request.form["svar"].strip().replace(" ", "").replace("kr", "").replace(",", ".")
+        fasit_norm = fasit.replace(" ", "").replace(",", ".")
+        if svar == fasit_norm:
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        elif svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        else:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 12000 + i, "link": f"/oppgaver/Prosent/nivaa3?n={i}"} for i in range(1, total + 1)]
+    return render_template("prosent_nivaa3.html",
+        oppgave=oppgave, nummer=nummer, total=total,
+        resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny,
+        riktige_oppgaver=riktige_oppgaver
+    )
+
+
 # START SERVER
 if __name__ == '__main__':
     app.run(debug=True)
