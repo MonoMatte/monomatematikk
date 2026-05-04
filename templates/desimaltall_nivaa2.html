@@ -1,9 +1,21 @@
 {% extends "oppgaver_layout.html" %}
 {% block title %}Desimaltall – Nivå 2{% endblock %}
 {% block task_content %}
-<a href="/oppgaver/desimaltall" class="close-btn">✕</a>
+
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const hasN = urlParams.has("n");
+const savedTask = localStorage.getItem("lastTask_desimaltall_nivaa2");
+if (!hasN && savedTask && savedTask !== "{{ nummer }}") {
+    window.location.href = "?n=" + savedTask;
+}
+</script>
+
+<a href="#" class="close-btn" onclick="goToLastTopic()">✕</a>
+
 <h1>Desimaltall – Nivå 2</h1>
 <p>Oppgave {{ nummer }} av {{ total }}</p>
+
 <div class="task-box">
     <p class="task-question-title">Oppgave:</p>
     <p class="task-question-text">{{ oppgave }}</p>
@@ -18,7 +30,21 @@
         </div>
     {% endif %}
 </div>
+
 {% if riktig %}
     <a href="?n={{ nummer + 1 }}" class="next-btn">Neste oppgave →</a>
 {% endif %}
+
+<script>
+localStorage.setItem("lastTask_desimaltall_nivaa2", "{{ nummer }}");
+localStorage.setItem("lastSubtopic", "Desimaltall");
+localStorage.setItem("lastLevel", "nivaa2");
+</script>
+
+<script>
+function goToLastTopic() {
+    window.location.href = "/oppgaver/trinn/8";
+}
+</script>
+
 {% endblock %}
