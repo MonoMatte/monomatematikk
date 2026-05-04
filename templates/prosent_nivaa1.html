@@ -1,0 +1,49 @@
+{% extends "oppgaver_layout.html" %}
+{% block title %}Prosent – Nivå 1{% endblock %}
+{% block task_content %}
+
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const hasN = urlParams.has("n");
+const savedTask = localStorage.getItem("lastTask_prosent_nivaa1");
+if (!hasN && savedTask && savedTask !== "{{ nummer }}") {
+    window.location.href = "?n=" + savedTask;
+}
+</script>
+
+<a href="#" class="close-btn" onclick="goToLastTopic()">✕</a>
+
+<h1>Prosent – Nivå 1</h1>
+<p>Oppgave {{ nummer }} av {{ total }}</p>
+
+<div class="task-box">
+    <p class="task-question-title">Oppgave:</p>
+    <p class="task-question-text">{{ oppgave }}</p>
+    <form method="POST" class="task-form">
+        <input type="text" name="svar" class="task-input" placeholder="Skriv svaret ditt">
+        <button class="task-submit">Sjekk svar</button>
+    </form>
+    {% if resultat %}
+        <div class="task-result {% if riktig %}correct-glow{% else %}wrong-glow{% endif %}">
+            {{ resultat }}
+        </div>
+    {% endif %}
+</div>
+
+{% if riktig %}
+    <a href="?n={{ nummer + 1 }}" class="next-btn">Neste oppgave →</a>
+{% endif %}
+
+<script>
+localStorage.setItem("lastTask_prosent_nivaa1", "{{ nummer }}");
+localStorage.setItem("lastSubtopic", "Prosent");
+localStorage.setItem("lastLevel", "nivaa1");
+</script>
+
+<script>
+function goToLastTopic() {
+    window.location.href = "/oppgaver/trinn/8";
+}
+</script>
+
+{% endblock %}
