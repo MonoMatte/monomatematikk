@@ -1,0 +1,21 @@
+{% extends "oppgaver_layout.html" %}
+{% block title %}Prosent{% endblock %}
+{% block task_content %}
+<button class="close-btn" onclick="history.back()">✕</button>
+<h1>Prosent</h1>
+<h3>Velg nivå</h3>
+<div class="level-buttons">
+    <a href="/oppgaver/Prosent/nivaa1" class="level-btn level-btn-easy">Nivå 1</a>
+    <a href="/oppgaver/Prosent/nivaa2" class="level-btn level-btn-medium">Nivå 2</a>
+    <a href="/oppgaver/Prosent/nivaa3" class="level-btn level-btn-hard">Nivå 3</a>
+</div>
+<div class="theory-box mt-4">
+    <h3>Forklaring</h3>
+    <p>Prosent betyr "per hundre". 50% = 50/100 = 0,5. Prosent brukes til å beskrive deler av en helhet.</p>
+    <ul>
+        <li><strong>Nivå 1:</strong> Finn prosenten av et tall (f.eks. 20% av 80)</li>
+        <li><strong>Nivå 2:</strong> Finn hvor mange prosent ett tall er av et annet</li>
+        <li><strong>Nivå 3:</strong> Prosentvis økning og nedgang</li>
+    </ul>
+</div>
+{% endblock %}
