@@ -1057,6 +1057,192 @@ def prosent_nivaa3_route():
     )
 
 
+# ─────────────────────────────────────────────
+# NEGATIVE TALL
+# ─────────────────────────────────────────────
+
+@app.route('/oppgaver/negative_tall')
+@login_required
+def negative_tall():
+    return render_template('oppgaver_negative_tall.html')
+
+
+# NEGATIVE TALL NIVÅ 1 – addisjon og subtraksjon (ID 13001–13030)
+negative_tall_nivaa1_oppgaver = [
+    ("-3 + 5", "2"), ("-7 + 3", "-4"), ("4 + (-6)", "-2"),
+    ("-2 + (-5)", "-7"), ("8 - 11", "-3"), ("-4 - 3", "-7"),
+    ("6 + (-9)", "-3"), ("-5 + 8", "3"), ("-1 - 6", "-7"),
+    ("3 + (-8)", "-5"), ("-9 + 4", "-5"), ("2 - 10", "-8"),
+    ("-6 + 6", "0"), ("5 + (-12)", "-7"), ("-3 - 5", "-8"),
+    ("-11 + 7", "-4"), ("1 - 9", "-8"), ("-4 + (-4)", "-8"),
+    ("7 + (-10)", "-3"), ("-8 + 3", "-5"), ("0 - 7", "-7"),
+    ("-2 + (-9)", "-11"), ("6 - 14", "-8"), ("-5 + 9", "4"),
+    ("-12 + 5", "-7"), ("3 - 13", "-10"), ("-7 + (-3)", "-10"),
+    ("4 + (-11)", "-7"), ("-6 + 2", "-4"), ("-9 - 4", "-13"),
+]
+
+
+@app.route('/oppgaver/Negative tall/nivaa1', methods=['GET', 'POST'])
+@login_required
+def negative_tall_nivaa1_route():
+    oppgaver = negative_tall_nivaa1_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 13000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Negative tall – Nivå 1", melding="Du fullførte nivå 1! Bra jobba 🎉")
+
+    oppgave, fasit = oppgaver[nummer - 1]
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        svar = request.form["svar"].strip()
+        if svar == fasit:
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        elif svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        else:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 13000 + i, "link": f"/oppgaver/Negative tall/nivaa1?n={i}"} for i in range(1, total + 1)]
+    return render_template("negative_tall_nivaa1.html",
+        oppgave=oppgave, nummer=nummer, total=total,
+        resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny,
+        riktige_oppgaver=riktige_oppgaver
+    )
+
+
+# NEGATIVE TALL NIVÅ 2 – multiplikasjon og divisjon (ID 14001–14030)
+negative_tall_nivaa2_oppgaver = [
+    ("-3 ⋅ 4", "-12"), ("(-5) ⋅ 2", "-10"), ("(-6) ⋅ (-3)", "18"),
+    ("4 ⋅ (-7)", "-28"), ("(-8) ⋅ 3", "-24"), ("(-4) ⋅ (-5)", "20"),
+    ("(-12) : 4", "-3"), ("20 : (-5)", "-4"), ("(-18) : (-6)", "3"),
+    ("(-9) ⋅ 4", "-36"), ("(-15) : 3", "-5"), ("(-7) ⋅ (-6)", "42"),
+    ("(-24) : 8", "-3"), ("6 ⋅ (-9)", "-54"), ("(-36) : (-4)", "9"),
+    ("(-11) ⋅ 3", "-33"), ("(-40) : 5", "-8"), ("(-8) ⋅ (-7)", "56"),
+    ("(-30) : (-6)", "5"), ("(-5) ⋅ 9", "-45"), ("(-56) : 7", "-8"),
+    ("(-12) ⋅ (-4)", "48"), ("(-63) : 9", "-7"), ("(-6) ⋅ 11", "-66"),
+    ("(-48) : (-8)", "6"), ("(-13) ⋅ 3", "-39"), ("(-72) : 8", "-9"),
+    ("(-9) ⋅ (-9)", "81"), ("(-100) : (-5)", "20"), ("(-14) ⋅ 4", "-56"),
+]
+
+
+@app.route('/oppgaver/Negative tall/nivaa2', methods=['GET', 'POST'])
+@login_required
+def negative_tall_nivaa2_route():
+    oppgaver = negative_tall_nivaa2_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 14000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Negative tall – Nivå 2", melding="Du fullførte nivå 2! Sterkt jobba 🔥")
+
+    oppgave, fasit = oppgaver[nummer - 1]
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        svar = request.form["svar"].strip()
+        if svar == fasit:
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        elif svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        else:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 14000 + i, "link": f"/oppgaver/Negative tall/nivaa2?n={i}"} for i in range(1, total + 1)]
+    return render_template("negative_tall_nivaa2.html",
+        oppgave=oppgave, nummer=nummer, total=total,
+        resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny,
+        riktige_oppgaver=riktige_oppgaver
+    )
+
+
+# NEGATIVE TALL NIVÅ 3 – blandede og sammensatte uttrykk (ID 15001–15030)
+negative_tall_nivaa3_oppgaver = [
+    ("-3 + 4 ⋅ (-2)", "-11"), ("(-6 + 2) ⋅ 3", "-12"),
+    ("5 - (-3) ⋅ 2", "11"), ("(-4) ⋅ (-3) - 8", "4"),
+    ("(-20) : 4 + (-3)", "-8"), ("3 ⋅ (-5) + 9", "-6"),
+    ("(-2 + 8) ⋅ (-3)", "-18"), ("(-16) : (-4) - 7", "-3"),
+    ("-7 + (-3) ⋅ (-4)", "5"), ("(5 - 9) ⋅ (-6)", "24"),
+    ("(-24) : 6 + (-5)", "-9"), ("(-3) ⋅ 4 - (-6)", "-6"),
+    ("(-8 + 3) ⋅ (-4)", "20"), ("2 ⋅ (-7) + (-4)", "-18"),
+    ("(-35) : (-5) - 12", "-5"), ("(-6) ⋅ (-3) + (-10)", "8"),
+    ("(−4 − 6) : (−2)", "5"), ("−5 ⋅ (3 − 7)", "20"),
+    ("(-9) ⋅ 2 - (-4)", "-14"), ("(-15 + 6) : (-3)", "3"),
+    ("4 ⋅ (-8) + (-6)", "-38"), ("(-3 + 7) ⋅ (-5)", "-20"),
+    ("(-42) : 7 - (-8)", "2"), ("(-5) ⋅ (-4) - 30", "-10"),
+    ("(-2 - 4) ⋅ (-7)", "42"), ("(-8) ⋅ 3 + (-4)", "-28"),
+    ("(-36) : (-9) + (-8)", "-4"), ("(-7 + 2) ⋅ (-6)", "30"),
+    ("3 ⋅ (-9) - (-15)", "-12"), ("(-4) ⋅ (-5) + (-25)", "-5"),
+]
+
+
+@app.route('/oppgaver/Negative tall/nivaa3', methods=['GET', 'POST'])
+@login_required
+def negative_tall_nivaa3_route():
+    oppgaver = negative_tall_nivaa3_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 15000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Negative tall – Nivå 3", melding="Du fullførte nivå 3! Monstersterkt 💪🔥")
+
+    oppgave, fasit = oppgaver[nummer - 1]
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        svar = request.form["svar"].strip()
+        if svar == fasit:
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        elif svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        else:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 15000 + i, "link": f"/oppgaver/Negative tall/nivaa3?n={i}"} for i in range(1, total + 1)]
+    return render_template("negative_tall_nivaa3.html",
+        oppgave=oppgave, nummer=nummer, total=total,
+        resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny,
+        riktige_oppgaver=riktige_oppgaver
+    )
+
+
 # START SERVER
 if __name__ == '__main__':
     app.run(debug=True)
