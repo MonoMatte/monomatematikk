@@ -1,0 +1,30 @@
+{% extends "oppgaver_layout.html" %}
+{% block title %}Negative tall{% endblock %}
+{% block task_content %}
+
+<a href="#" class="close-btn" onclick="goToLastTopic()">✕</a>
+
+<h1>Negative tall</h1>
+<h3>Velg nivå</h3>
+<div class="level-buttons">
+    <a href="/oppgaver/Negative tall/nivaa1" class="level-btn level-btn-easy">Nivå 1</a>
+    <a href="/oppgaver/Negative tall/nivaa2" class="level-btn level-btn-medium">Nivå 2</a>
+    <a href="/oppgaver/Negative tall/nivaa3" class="level-btn level-btn-hard">Nivå 3</a>
+</div>
+<div class="theory-box mt-4">
+    <h3>Forklaring</h3>
+    <p>Negative tall er tall som er mindre enn null, for eksempel −3 eller −15. De ligger til venstre for null på talllinjen.</p>
+    <ul>
+        <li><strong>Nivå 1:</strong> Addisjon og subtraksjon med negative tall</li>
+        <li><strong>Nivå 2:</strong> Multiplikasjon og divisjon med negative tall</li>
+        <li><strong>Nivå 3:</strong> Blandede og sammensatte uttrykk med negative tall</li>
+    </ul>
+</div>
+
+<script>
+function goToLastTopic() {
+    window.location.href = "/oppgaver/trinn/8";
+}
+</script>
+
+{% endblock %}
