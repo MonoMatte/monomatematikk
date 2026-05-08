@@ -1,0 +1,63 @@
+{% extends "oppgaver_layout.html" %}
+{% block title %}Brøker – Nivå 2{% endblock %}
+{% block task_content %}
+
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const hasN = urlParams.has("n");
+const savedTask = localStorage.getItem("lastTask_brok_nivaa2");
+if (!hasN && savedTask && savedTask !== "{{ nummer }}") {
+    window.location.href = "?n=" + savedTask;
+}
+</script>
+
+<a href="#" class="close-btn" onclick="goToLastTopic()">✕</a>
+<h1>Brøker – Nivå 2</h1>
+<p>Oppgave {{ nummer }} av {{ total }}</p>
+
+<div class="task-box">
+    <p class="task-question-title">Oppgave:</p>
+
+    {% if type == "flervalg" %}
+        <div class="brok-oppgave-visning">{{ oppgave_html | safe }}</div>
+        <form method="POST" class="flervalg-grid">
+            {% for alt in alternativer %}
+            <button type="submit" name="svar_flervalg" value="{{ alt.t }}/{{ alt.n }}" class="flervalg-kort">
+                <div class="brok-visning">
+                    <span>{{ alt.t }}</span>
+                    <div class="brok-linje"></div>
+                    <span>{{ alt.n }}</span>
+                </div>
+            </button>
+            {% endfor %}
+        </form>
+    {% else %}
+        <div class="brok-oppgave-visning">{{ oppgave_html | safe }}</div>
+        <form method="POST" class="task-form-brok">
+            <div class="brok-input-wrapper">
+                <input type="text" name="teller" class="brok-input" placeholder="teller" autocomplete="off">
+                <div class="brok-strek"></div>
+                <input type="text" name="nevner" class="brok-input" placeholder="nevner" autocomplete="off">
+            </div>
+            <button class="task-submit" style="margin-top: 16px;">Sjekk svar</button>
+        </form>
+    {% endif %}
+
+    {% if resultat %}
+        <div class="task-result {% if riktig %}correct-glow{% else %}wrong-glow{% endif %}">
+            {{ resultat }}
+        </div>
+    {% endif %}
+</div>
+
+{% if riktig %}
+    <a href="?n={{ nummer + 1 }}" class="next-btn">Neste oppgave →</a>
+{% endif %}
+
+<script>
+localStorage.setItem("lastTask_brok_nivaa2", "{{ nummer }}");
+localStorage.setItem("lastSubtopic", "Brøker");
+localStorage.setItem("lastLevel", "nivaa2");
+function goToLastTopic() { window.location.href = "/oppgaver/trinn/8"; }
+</script>
+{% endblock %}
