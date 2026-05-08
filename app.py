@@ -1243,6 +1243,339 @@ def negative_tall_nivaa3_route():
     )
 
 
+# ─────────────────────────────────────────────
+# BRØK
+# ─────────────────────────────────────────────
+
+
+# ─────────────────────────────────────────────
+# BRØK
+# ─────────────────────────────────────────────
+
+@app.route('/oppgaver/brok')
+@login_required
+def brok():
+    return render_template('oppgaver_brok.html')
+
+
+def b(t, n):
+    """Lag HTML for én brøk."""
+    return f'<span class="inline-brok"><span class="ib-t">{t}</span><span class="ib-s"></span><span class="ib-n">{n}</span></span>'
+
+
+def sjekk_brok(t_svar, n_svar, t_fasit, n_fasit):
+    try:
+        t = int(str(t_svar).strip())
+        n = int(str(n_svar).strip())
+        tf = int(t_fasit)
+        nf = int(n_fasit)
+        if n == 0 or nf == 0:
+            return False
+        return t * nf == tf * n
+    except:
+        return False
+
+
+def sjekk_flervalg(svar_str, t_fasit, n_fasit):
+    try:
+        deler = svar_str.split("/")
+        return sjekk_brok(deler[0], deler[1], t_fasit, n_fasit)
+    except:
+        return False
+
+
+# ── NIVÅ 1: Forkorting og grunnleggende brøkforståelse ──
+# type: "skriv" = teller/nevner input, "flervalg" = 4 alternativer, "tekst" = tekstoppgave med skriv
+# Format: (type, oppgave_tekst, oppgave_html, teller_fasit, nevner_fasit, alternativer_eller_None)
+
+def _fv(riktig_t, riktig_n, gale):
+    """Lag flervalg-alternativer: riktig + 3 gale, blandet."""
+    import random
+    alts = [{"t": riktig_t, "n": riktig_n}] + [{"t": g[0], "n": g[1]} for g in gale]
+    random.shuffle(alts)
+    return alts
+
+
+brok_nivaa1_oppgaver = [
+    # --- FORKORT ---
+    ("skriv", "Forkort brøken:", f'Forkort brøken: {b(2,4)}', "1", "2", None),
+    ("skriv", "Forkort brøken:", f'Forkort brøken: {b(3,9)}', "1", "3", None),
+    ("flervalg", "", f'Forkort brøken: {b(4,8)}', "1", "2", [("2","4"),("3","4"),("1","4")]),
+    ("skriv", "Forkort brøken:", f'Forkort brøken: {b(6,12)}', "1", "2", None),
+    ("flervalg", "", f'Forkort brøken: {b(4,6)}', "2", "3", [("1","2"),("3","4"),("1","3")]),
+    ("skriv", "Forkort brøken:", f'Forkort brøken: {b(6,9)}', "2", "3", None),
+    ("flervalg", "", f'Forkort brøken: {b(8,12)}', "2", "3", [("4","6"),("3","4"),("1","2")]),
+    ("skriv", "Forkort brøken:", f'Forkort brøken: {b(6,8)}', "3", "4", None),
+    ("flervalg", "", f'Forkort brøken: {b(10,15)}', "2", "3", [("1","2"),("3","5"),("5","8")]),
+    ("skriv", "Forkort brøken:", f'Forkort brøken: {b(4,10)}', "2", "5", None),
+    # --- TEKST ---
+    ("tekst", "En pizza er delt i 8 like deler. Kari spiser 4 deler. Hvilken brøk av pizzaen spiste Kari? Forkort svaret.", "", "1", "2", None),
+    ("tekst", "En sjokolade har 12 biter. Jonas spiser 6 biter. Hvilken forkortet brøk er dette?", "", "1", "2", None),
+    ("flervalg", "", f'Forkort brøken: {b(9,12)}', "3", "4", [("2","3"),("1","2"),("6","8")]),
+    ("skriv", "Forkort brøken:", f'Forkort brøken: {b(10,20)}', "1", "2", None),
+    ("tekst", "En klasse har 30 elever. 10 elever er borte. Hvilken forkortet brøk av klassen er borte?", "", "1", "3", None),
+    ("flervalg", "", f'Forkort brøken: {b(12,16)}', "3", "4", [("2","3"),("6","8"),("1","2")]),
+    ("skriv", "Forkort brøken:", f'Forkort brøken: {b(15,20)}', "3", "4", None),
+    ("flervalg", "", f'Forkort brøken: {b(6,15)}', "2", "5", [("1","3"),("3","7"),("4","9")]),
+    ("skriv", "Forkort brøken:", f'Forkort brøken: {b(12,18)}', "2", "3", None),
+    ("tekst", "En flaske er 3/4 full. Skriv dette som en forkortet brøk (den er allerede forkortet — hva er telleren?)", "", "3", "4", None),
+    ("flervalg", "", f'Forkort brøken: {b(14,21)}', "2", "3", [("7","10"),("1","2"),("3","4")]),
+    ("skriv", "Forkort brøken:", f'Forkort brøken: {b(10,25)}', "2", "5", None),
+    ("flervalg", "", f'Forkort brøken: {b(16,24)}', "2", "3", [("3","4"),("4","6"),("1","2")]),
+    ("skriv", "Forkort brøken:", f'Forkort brøken: {b(20,30)}', "2", "3", None),
+    ("tekst", "En dag har 24 timer. Du sover 8 timer. Hvilken forkortet brøk av dagen sover du?", "", "1", "3", None),
+    ("flervalg", "", f'Forkort brøken: {b(25,100)}', "1", "4", [("2","5"),("1","2"),("5","20")]),
+    ("skriv", "Forkort brøken:", f'Forkort brøken: {b(75,100)}', "3", "4", None),
+    ("flervalg", "", f'Forkort brøken: {b(50,100)}', "1", "2", [("5","10"),("2","4"),("1","4")]),
+    ("tekst", "En butikk har 100 varer. 25 er på salg. Hvilken forkortet brøk er på salg?", "", "1", "4", None),
+    ("skriv", "Forkort brøken:", f'Forkort brøken: {b(21,28)}', "3", "4", None),
+]
+
+
+@app.route('/oppgaver/Brøker/nivaa1', methods=['GET', 'POST'])
+@login_required
+def brok_nivaa1_route():
+    oppgaver = brok_nivaa1_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 16000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Brøker – Nivå 1", melding="Du fullførte nivå 1! Bra jobba 🎉")
+
+    o = oppgaver[nummer - 1]
+    type_, oppgave_tekst, oppgave_html, tf, nf, gale = o
+
+    alternativer = _fv(tf, nf, gale) if type_ == "flervalg" else []
+    if not oppgave_html:
+        oppgave_html = f'<p class="task-question-text">{oppgave_tekst}</p>'
+
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        if type_ == "flervalg":
+            svar = request.form.get("svar_flervalg", "")
+            ok = sjekk_flervalg(svar, tf, nf)
+        else:
+            ts = request.form.get("teller", "").strip()
+            ns = request.form.get("nevner", "").strip()
+            ok = sjekk_brok(ts, ns, tf, nf)
+            if ts == "67" or ns == "67":
+                resultat = "🤡🤮 Du er ikke morsom 🖕"
+                ok = False
+
+        if ok:
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        elif not resultat:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 16000 + i, "link": f"/oppgaver/Brøker/nivaa1?n={i}"} for i in range(1, total + 1)]
+    return render_template("brok_nivaa1.html",
+        oppgave=oppgave_tekst, oppgave_html=oppgave_html,
+        type=type_, alternativer=alternativer,
+        nummer=nummer, total=total,
+        resultat=resultat, riktig=riktig,
+        fasit_teller=tf, fasit_nevner=nf,
+        oppgave_nummer=nummer, oppgaver=venstre_meny,
+        riktige_oppgaver=riktige_oppgaver
+    )
+
+
+# ── NIVÅ 2: Addisjon og subtraksjon av brøker ──
+brok_nivaa2_oppgaver = [
+    ("skriv", "", f'Regn ut: {b(1,4)} + {b(1,4)} =', "2", "4", None),
+    ("skriv", "", f'Regn ut: {b(2,5)} + {b(1,5)} =', "3", "5", None),
+    ("flervalg", "", f'Regn ut: {b(3,8)} + {b(2,8)} =', "5", "8", [("1","2"),("6","8"),("4","8")]),
+    ("skriv", "", f'Regn ut: {b(3,4)} - {b(1,4)} =', "2", "4", None),
+    ("flervalg", "", f'Regn ut: {b(4,5)} - {b(2,5)} =', "2", "5", [("1","5"),("3","5"),("6","10")]),
+    ("skriv", "", f'Regn ut: {b(1,2)} + {b(1,4)} =', "3", "4", None),
+    ("flervalg", "", f'Regn ut: {b(1,3)} + {b(1,6)} =', "3", "6", [("2","9"),("1","2"),("4","6")]),
+    ("skriv", "", f'Regn ut: {b(2,3)} + {b(1,6)} =', "5", "6", None),
+    ("flervalg", "", f'Regn ut: {b(3,4)} + {b(1,8)} =', "7", "8", [("4","12"),("1","2"),("5","8")]),
+    ("skriv", "", f'Regn ut: {b(1,2)} - {b(1,4)} =', "1", "4", None),
+    ("tekst", "Emma spiser 2/8 av en kake, og Lena spiser 3/8. Hvor stor del av kaken er spist til sammen?", "", "5", "8", None),
+    ("flervalg", "", f'Regn ut: {b(2,3)} - {b(1,6)} =', "3", "6", [("1","3"),("1","6"),("4","6")]),
+    ("skriv", "", f'Regn ut: {b(3,4)} - {b(1,8)} =', "5", "8", None),
+    ("flervalg", "", f'Regn ut: {b(5,6)} - {b(1,3)} =', "3", "6", [("4","6"),("2","3"),("1","2")]),
+    ("tekst", "En beholder er 3/4 full. Du tar ut 1/8 av beholderen. Hvor mye er igjen?", "", "5", "8", None),
+    ("skriv", "", f'Regn ut: {b(1,2)} + {b(1,6)} =', "4", "6", None),
+    ("flervalg", "", f'Regn ut: {b(1,4)} + {b(3,8)} =', "5", "8", [("4","12"),("2","8"),("1","2")]),
+    ("skriv", "", f'Regn ut: {b(5,8)} - {b(1,4)} =', "3", "8", None),
+    ("flervalg", "", f'Regn ut: {b(7,10)} - {b(2,5)} =', "3", "10", [("5","5"),("1","2"),("4","10")]),
+    ("tekst", "Ole løper 1/3 av en runde, så løper han 2/9 til. Hvor stor del av runden har han løpt?", "", "5", "9", None),
+    ("skriv", "", f'Regn ut: {b(1,3)} + {b(2,9)} =', "5", "9", None),
+    ("flervalg", "", f'Regn ut: {b(5,9)} - {b(1,3)} =', "2", "9", [("4","9"),("1","3"),("6","9")]),
+    ("skriv", "", f'Regn ut: {b(3,4)} + {b(1,12)} =', "10", "12", None),
+    ("flervalg", "", f'Regn ut: {b(2,5)} + {b(3,10)} =', "7", "10", [("5","15"),("1","2"),("6","10")]),
+    ("tekst", "En strikk er 9/10 meter. Du klipper av 2/5 meter. Hvor mye er igjen?", "", "5", "10", None),
+    ("skriv", "", f'Regn ut: {b(9,10)} - {b(2,5)} =', "5", "10", None),
+    ("flervalg", "", f'Regn ut: {b(1,6)} + {b(5,12)} =', "7", "12", [("6","18"),("1","2"),("3","12")]),
+    ("skriv", "", f'Regn ut: {b(11,12)} - {b(1,4)} =', "8", "12", None),
+    ("flervalg", "", f'Regn ut: {b(3,8)} + {b(1,4)} =', "5", "8", [("4","12"),("2","8"),("6","8")]),
+    ("tekst", "En tank er 7/12 full. Det lekker ut 1/6. Hvor mye er igjen i tanken?", "", "5", "12", None),
+]
+
+
+@app.route('/oppgaver/Brøker/nivaa2', methods=['GET', 'POST'])
+@login_required
+def brok_nivaa2_route():
+    oppgaver = brok_nivaa2_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 17000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Brøker – Nivå 2", melding="Du fullførte nivå 2! Sterkt jobba 🔥")
+
+    o = oppgaver[nummer - 1]
+    type_, oppgave_tekst, oppgave_html, tf, nf, gale = o
+
+    alternativer = _fv(tf, nf, gale) if type_ == "flervalg" else []
+    if not oppgave_html:
+        oppgave_html = f'<p class="task-question-text">{oppgave_tekst}</p>'
+
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        if type_ == "flervalg":
+            svar = request.form.get("svar_flervalg", "")
+            ok = sjekk_flervalg(svar, tf, nf)
+        else:
+            ts = request.form.get("teller", "").strip()
+            ns = request.form.get("nevner", "").strip()
+            ok = sjekk_brok(ts, ns, tf, nf)
+            if ts == "67" or ns == "67":
+                resultat = "🤡🤮 Du er ikke morsom 🖕"
+                ok = False
+
+        if ok:
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        elif not resultat:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 17000 + i, "link": f"/oppgaver/Brøker/nivaa2?n={i}"} for i in range(1, total + 1)]
+    return render_template("brok_nivaa2.html",
+        oppgave=oppgave_tekst, oppgave_html=oppgave_html,
+        type=type_, alternativer=alternativer,
+        nummer=nummer, total=total,
+        resultat=resultat, riktig=riktig,
+        fasit_teller=tf, fasit_nevner=nf,
+        oppgave_nummer=nummer, oppgaver=venstre_meny,
+        riktige_oppgaver=riktige_oppgaver
+    )
+
+
+# ── NIVÅ 3: Multiplikasjon og divisjon av brøker ──
+brok_nivaa3_oppgaver = [
+    ("skriv", "", f'Regn ut: {b(1,2)} · {b(1,3)} =', "1", "6", None),
+    ("flervalg", "", f'Regn ut: {b(2,3)} · {b(3,4)} =', "6", "12", [("5","7"),("2","4"),("3","8")]),
+    ("skriv", "", f'Regn ut: {b(3,4)} · {b(2,5)} =', "6", "20", None),
+    ("flervalg", "", f'Regn ut: {b(4,5)} · {b(5,8)} =', "20", "40", [("9","13"),("1","3"),("8","25")]),
+    ("tekst", "En oppskrift bruker 2/3 av en pakke mel. Du lager halvparten av oppskriften. Hvor mye mel bruker du?", "", "1", "3", None),
+    ("skriv", "", f'Regn ut: {b(1,2)} ÷ {b(1,4)} =', "4", "2", None),
+    ("flervalg", "", f'Regn ut: {b(2,3)} ÷ {b(1,3)} =', "6", "3", [("2","9"),("3","2"),("1","2")]),
+    ("skriv", "", f'Regn ut: {b(3,4)} ÷ {b(3,8)} =', "24", "12", None),
+    ("flervalg", "", f'Regn ut: {b(5,6)} · {b(3,10)} =', "15", "60", [("8","16"),("2","5"),("1","4")]),
+    ("tekst", "En snekker har 3/4 meter bord. Han kapper det i biter på 3/8 meter. Hvor mange biter får han?", "", "2", "1", None),
+    ("skriv", "", f'Regn ut: {b(2,5)} · {b(5,6)} =', "10", "30", None),
+    ("flervalg", "", f'Regn ut: {b(4,5)} ÷ {b(2,5)} =', "20", "10", [("2","25"),("6","5"),("8","10")]),
+    ("skriv", "", f'Regn ut: {b(5,6)} ÷ {b(5,12)} =', "60", "30", None),
+    ("flervalg", "", f'Regn ut: {b(7,8)} · {b(4,7)} =', "28", "56", [("11","15"),("3","7"),("4","8")]),
+    ("tekst", "En beholder rommer 5/6 liter. Du fyller 2/3 av beholderen. Hvor mange liter er i beholderen?", "", "10", "18", None),
+    ("skriv", "", f'Regn ut: {b(1,3)} ÷ {b(1,6)} =', "6", "3", None),
+    ("flervalg", "", f'Regn ut: {b(3,7)} · {b(7,9)} =', "21", "63", [("10","16"),("1","3"),("6","7")]),
+    ("skriv", "", f'Regn ut: {b(2,9)} · {b(3,4)} =', "6", "36", None),
+    ("flervalg", "", f'Regn ut: {b(3,8)} ÷ {b(3,4)} =', "12", "24", [("9","32"),("1","2"),("6","12")]),
+    ("tekst", "Du har 4/5 kg sukker. Du bruker 1/2 av det til en kake. Hvor mye sukker bruker du?", "", "4", "10", None),
+    ("skriv", "", f'Regn ut: {b(5,7)} · {b(7,10)} =', "35", "70", None),
+    ("flervalg", "", f'Regn ut: {b(6,7)} ÷ {b(3,14)} =', "84", "21", [("18","98"),("2","1"),("9","14")]),
+    ("skriv", "", f'Regn ut: {b(5,9)} · {b(3,10)} =', "15", "90", None),
+    ("flervalg", "", f'Regn ut: {b(9,10)} · {b(5,3)} =', "45", "30", [("14","13"),("3","2"),("4","5")]),
+    ("tekst", "En løper fullfører 3/4 av et løp på 5/6 time. Hvor lang tid bruker han på hele løpet? (5/6 ÷ 3/4)", "", "20", "18", None),
+    ("skriv", "", f'Regn ut: {b(4,11)} · {b(11,8)} =', "44", "88", None),
+    ("flervalg", "", f'Regn ut: {b(5,8)} ÷ {b(15,16)} =', "80", "120", [("75","128"),("1","2"),("16","24")]),
+    ("skriv", "", f'Regn ut: {b(7,12)} ÷ {b(7,6)} =', "42", "84", None),
+    ("flervalg", "", f'Regn ut: {b(2,3)} ÷ {b(8,9)} =', "18", "24", [("16","27"),("3","4"),("6","9")]),
+    ("tekst", "En fabrikk produserer 5/6 tonn om dagen. Hvor mye produserer den på 3/4 dag?", "", "15", "24", None),
+]
+
+
+@app.route('/oppgaver/Brøker/nivaa3', methods=['GET', 'POST'])
+@login_required
+def brok_nivaa3_route():
+    oppgaver = brok_nivaa3_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 18000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Brøker – Nivå 3", melding="Du fullførte nivå 3! Monstersterkt 💪🔥")
+
+    o = oppgaver[nummer - 1]
+    type_, oppgave_tekst, oppgave_html, tf, nf, gale = o
+
+    alternativer = _fv(tf, nf, gale) if type_ == "flervalg" else []
+    if not oppgave_html:
+        oppgave_html = f'<p class="task-question-text">{oppgave_tekst}</p>'
+
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        if type_ == "flervalg":
+            svar = request.form.get("svar_flervalg", "")
+            ok = sjekk_flervalg(svar, tf, nf)
+        else:
+            ts = request.form.get("teller", "").strip()
+            ns = request.form.get("nevner", "").strip()
+            ok = sjekk_brok(ts, ns, tf, nf)
+            if ts == "67" or ns == "67":
+                resultat = "🤡🤮 Du er ikke morsom 🖕"
+                ok = False
+
+        if ok:
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        elif not resultat:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 18000 + i, "link": f"/oppgaver/Brøker/nivaa3?n={i}"} for i in range(1, total + 1)]
+    return render_template("brok_nivaa3.html",
+        oppgave=oppgave_tekst, oppgave_html=oppgave_html,
+        type=type_, alternativer=alternativer,
+        nummer=nummer, total=total,
+        resultat=resultat, riktig=riktig,
+        fasit_teller=tf, fasit_nevner=nf,
+        oppgave_nummer=nummer, oppgaver=venstre_meny,
+        riktige_oppgaver=riktige_oppgaver
+    )
+
+
 # START SERVER
 if __name__ == '__main__':
     app.run(debug=True)
