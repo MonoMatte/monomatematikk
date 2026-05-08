@@ -1,0 +1,30 @@
+{% extends "oppgaver_layout.html" %}
+{% block title %}Brøk{% endblock %}
+{% block task_content %}
+
+<a href="#" class="close-btn" onclick="goToLastTopic()">✕</a>
+
+<h1>Brøk</h1>
+<h3>Velg nivå</h3>
+<div class="level-buttons">
+    <a href="/oppgaver/Brøker/nivaa1" class="level-btn level-btn-easy">Nivå 1</a>
+    <a href="/oppgaver/Brøker/nivaa2" class="level-btn level-btn-medium">Nivå 2</a>
+    <a href="/oppgaver/Brøker/nivaa3" class="level-btn level-btn-hard">Nivå 3</a>
+</div>
+<div class="theory-box mt-4">
+    <h3>Forklaring</h3>
+    <p>En brøk har en <strong>teller</strong> (oppe) og en <strong>nevner</strong> (nede). For eksempel: ¾ betyr 3 delt på 4.</p>
+    <ul>
+        <li><strong>Nivå 1:</strong> Forkorting og sammenligning av brøker</li>
+        <li><strong>Nivå 2:</strong> Addisjon og subtraksjon av brøker</li>
+        <li><strong>Nivå 3:</strong> Multiplikasjon og divisjon av brøker</li>
+    </ul>
+</div>
+
+<script>
+function goToLastTopic() {
+    window.location.href = "/oppgaver/trinn/8";
+}
+</script>
+
+{% endblock %}
