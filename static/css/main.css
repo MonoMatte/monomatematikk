@@ -1882,3 +1882,191 @@ body {
     font-size: 0.95rem;
     color: #333;
 }
+
+
+
+
+
+
+/* -------------------------------------------------- */
+/* BRØK INPUT */
+/* -------------------------------------------------- */
+
+.task-form-brok {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    margin-top: 16px;
+}
+
+.brok-input-wrapper {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.brok-input {
+    width: 100px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(0,0,0,0.15);
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-align: center;
+    backdrop-filter: blur(6px);
+}
+
+.brok-input:focus {
+    outline: none;
+    border-color: #0d6efd;
+    box-shadow: 0 0 8px rgba(13,110,253,0.4);
+}
+
+.brok-strek {
+    width: 110px;
+    height: 3px;
+    background: #1a1f36;
+    border-radius: 3px;
+    margin: 2px 0;
+}
+
+.brok-fasit-vis {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 1.3rem;
+    font-weight: 800;
+    margin-top: 10px;
+    gap: 2px;
+}
+
+.brok-fasit-strek {
+    width: 40px;
+    height: 2px;
+    background: currentColor;
+    border-radius: 2px;
+}
+
+
+
+
+/* -------------------------------------------------- */
+/* BRØK – INLINE VISNING OG FLERVALG */
+/* -------------------------------------------------- */
+
+.inline-brok {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    vertical-align: middle;
+    margin: 0 6px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.ib-t { display: block; text-align: center; }
+.ib-n { display: block; text-align: center; }
+
+.ib-s {
+    display: block;
+    width: 100%;
+    min-width: 28px;
+    height: 2px;
+    background: #1a1f36;
+    margin: 3px 0;
+    border-radius: 2px;
+}
+
+.brok-oppgave-visning {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.flervalg-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.flervalg-kort {
+    background: white;
+    border: 2px solid #e0e6f0;
+    border-radius: 16px;
+    padding: 24px 16px;
+    cursor: pointer;
+    transition: 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.flervalg-kort:hover {
+    border-color: #0d6efd;
+    background: #f0f5ff;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(13,110,253,0.15);
+}
+
+.brok-visning {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 1.6rem;
+    font-weight: 800;
+    gap: 4px;
+}
+
+.brok-linje {
+    width: 40px;
+    height: 3px;
+    background: #1a1f36;
+    border-radius: 2px;
+}
+
+.task-form-brok {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 16px;
+}
+
+.brok-input-wrapper {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.brok-input {
+    width: 100px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(0,0,0,0.15);
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.brok-input:focus {
+    outline: none;
+    border-color: #0d6efd;
+    box-shadow: 0 0 8px rgba(13,110,253,0.4);
+}
+
+.brok-strek {
+    width: 110px;
+    height: 3px;
+    background: #1a1f36;
+    border-radius: 3px;
+    margin: 2px 0;
+}
