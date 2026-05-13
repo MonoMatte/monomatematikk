@@ -1576,6 +1576,279 @@ def brok_nivaa3_route():
     )
 
 
+
+# ─────────────────────────────────────────────
+# POTENSER (ENKLE)
+# ─────────────────────────────────────────────
+
+@app.route('/oppgaver/potenser')
+@login_required
+def potenser():
+    return render_template('oppgaver_potenser.html')
+
+
+def p(base, exp):
+    """Lag HTML for potens med superscript."""
+    return f'<span class="pot-uttrykk">{base}<sup>{exp}</sup></span>'
+
+
+def _fv_tall(riktig, gale):
+    """Flervalg med enkle tall."""
+    import random
+    alts = [riktig] + gale
+    random.shuffle(alts)
+    return alts
+
+
+# Format: (type, oppgave_html, fasit, alternativer_eller_None)
+# type: "skriv" | "flervalg" | "tekst"
+
+# POTENSER NIVÅ 1 – enkle potenser, kvadrattall (ID 19001–19030)
+potenser_nivaa1_oppgaver = [
+    ("skriv",   f'Regn ut: {p(2,2)} =', "4", None),
+    ("skriv",   f'Regn ut: {p(3,2)} =', "9", None),
+    ("flervalg",f'Regn ut: {p(4,2)} =', "16", ["8", "12", "20"]),
+    ("skriv",   f'Regn ut: {p(5,2)} =', "25", None),
+    ("flervalg",f'Regn ut: {p(6,2)} =', "36", ["12", "30", "42"]),
+    ("skriv",   f'Regn ut: {p(7,2)} =', "49", None),
+    ("flervalg",f'Regn ut: {p(8,2)} =', "64", ["16", "48", "72"]),
+    ("skriv",   f'Regn ut: {p(9,2)} =', "81", None),
+    ("flervalg",f'Regn ut: {p(10,2)} =', "100", ["20", "50", "110"]),
+    ("skriv",   f'Regn ut: {p(2,3)} =', "8", None),
+    ("flervalg",f'Regn ut: {p(3,3)} =', "27", ["9", "18", "33"]),
+    ("skriv",   f'Regn ut: {p(2,4)} =', "16", None),
+    ("flervalg",f'Regn ut: {p(2,5)} =', "32", ["10", "25", "16"]),
+    ("skriv",   f'Regn ut: {p(10,3)} =', "1000", None),
+    ("flervalg",f'Regn ut: {p(1,10)} =', "1", ["10", "100", "0"]),
+    ("tekst",   'Et kvadrat har sidelengde 7 cm. Hva er arealet? (Areal = side²)', "49", None),
+    ("flervalg",f'Regn ut: {p(4,3)} =', "64", ["12", "16", "48"]),
+    ("skriv",   f'Regn ut: {p(5,3)} =', "125", None),
+    ("flervalg",f'Regn ut: {p(11,2)} =', "121", ["22", "111", "132"]),
+    ("tekst",   'Et kvadrat har sidelengde 9 cm. Hva er arealet?', "81", None),
+    ("skriv",   f'Regn ut: {p(12,2)} =', "144", None),
+    ("flervalg",f'Regn ut: {p(3,4)} =', "81", ["12", "64", "27"]),
+    ("tekst",   f'Hva er {p(2,6)} ?', "64", None),
+    ("flervalg",f'Hva er {p(10,4)} ?', "10000", ["1000", "40", "100000"]),
+    ("skriv",   f'Regn ut: {p(6,3)} =', "216", None),
+    ("flervalg",f'Regn ut: {p(0,5)} =', "0", ["1", "5", "0,5"]),
+    ("tekst",   'Et rom er 5 m langt og 5 m bredt. Hva er gulvarealet?', "25", None),
+    ("flervalg",f'Regn ut: {p(13,2)} =', "169", ["26", "130", "196"]),
+    ("skriv",   f'Regn ut: {p(2,8)} =', "256", None),
+    ("flervalg",f'Regn ut: {p(15,2)} =', "225", ["30", "150", "250"]),
+]
+
+
+@app.route('/oppgaver/Potenser (enkle)/nivaa1', methods=['GET', 'POST'])
+@login_required
+def potenser_nivaa1_route():
+    oppgaver = potenser_nivaa1_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 19000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Potenser – Nivå 1", melding="Du fullførte nivå 1! Bra jobba 🎉")
+
+    type_, oppgave_html, fasit, gale = oppgaver[nummer - 1]
+    alternativer = _fv_tall(fasit, gale) if type_ == "flervalg" else []
+
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        if type_ == "flervalg":
+            svar = request.form.get("svar_flervalg", "").strip()
+        else:
+            svar = request.form.get("svar", "").strip()
+
+        if svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        elif svar == fasit:
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        else:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 19000 + i, "link": f"/oppgaver/Potenser (enkle)/nivaa1?n={i}"} for i in range(1, total + 1)]
+    return render_template("potenser_nivaa1.html",
+        oppgave_html=oppgave_html, type=type_, alternativer=alternativer,
+        nummer=nummer, total=total, resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny, riktige_oppgaver=riktige_oppgaver
+    )
+
+
+# POTENSER NIVÅ 2 – kubikktall, større eksponenter, sammenligning (ID 20001–20030)
+potenser_nivaa2_oppgaver = [
+    ("skriv",   f'Regn ut: {p(2,7)} =', "128", None),
+    ("flervalg",f'Regn ut: {p(3,5)} =', "243", ["125", "15", "81"]),
+    ("skriv",   f'Regn ut: {p(4,4)} =', "256", None),
+    ("flervalg",f'Regn ut: {p(5,4)} =', "625", ["100", "500", "125"]),
+    ("tekst",   f'En kube har sidelengde 4 cm. Hva er volumet? (Volum = side³)', "64", None),
+    ("skriv",   f'Regn ut: {p(6,4)} =', "1296", None),
+    ("flervalg",f'Regn ut: {p(2,10)} =', "1024", ["512", "20", "2048"]),
+    ("tekst",   f'En kube har sidelengde 5 cm. Hva er volumet?', "125", None),
+    ("flervalg",f'Hva er større: {p(3,4)} eller {p(4,3)}?', "81", ["64", "De er like", "Vet ikke"]),
+    ("skriv",   f'Regn ut: {p(7,3)} =', "343", None),
+    ("flervalg",f'Regn ut: {p(8,3)} =', "512", ["24", "256", "384"]),
+    ("tekst",   f'En kube har sidelengde 3 cm. Hva er volumet?', "27", None),
+    ("skriv",   f'Regn ut: {p(9,3)} =', "729", None),
+    ("flervalg",f'Regn ut: {p(10,5)} =', "100000", ["50000", "10000", "1000000"]),
+    ("skriv",   f'Regn ut: {p(2,9)} =', "512", None),
+    ("flervalg",f'Hva er {p(4,5)} ?', "1024", ["20", "512", "2048"]),
+    ("tekst",   f'Et skakbrett har 8 rader med 8 felt. Hvor mange felt er det totalt? (Skriv som potens og regn ut)', "64", None),
+    ("flervalg",f'Regn ut: {p(5,5)} =', "3125", ["625", "25", "1000"]),
+    ("skriv",   f'Regn ut: {p(3,6)} =', "729", None),
+    ("flervalg",f'Hva er {p(6,3)} ?', "216", ["18", "63", "108"]),
+    ("tekst",   f'En datamaskin lagrer 2¹⁰ filer. Hvor mange filer er det?', "1024", None),
+    ("flervalg",f'Regn ut: {p(2,6)} + {p(2,5)} =', "96", ["32", "64", "128"]),
+    ("skriv",   f'Regn ut: {p(11,3)} =', "1331", None),
+    ("flervalg",f'Hva er {p(12,3)} ?', "1728", ["36", "864", "144"]),
+    ("tekst",   f'Et rektangel har sider {p(3,2)} cm og {p(2,3)} cm. Hva er arealet?', "72", None),
+    ("skriv",   f'Regn ut: {p(4,4)} + {p(3,3)} =', "283", None),
+    ("flervalg",f'Regn ut: {p(5,3)} - {p(4,3)} =', "61", ["0", "1", "125"]),
+    ("tekst",   f'En by dobler befolkningen sin hvert tiår. Hvis den nå har 1000 innbyggere, hvor mange har den etter 3 tiår? (1000 · {p(2,3)})', "8000", None),
+    ("flervalg",f'Hva er {p(2,3)} · {p(2,3)} ?', "64", ["12", "32", "16"]),
+    ("skriv",   f'Regn ut: {p(10,6)} =', "1000000", None),
+]
+
+
+@app.route('/oppgaver/Potenser (enkle)/nivaa2', methods=['GET', 'POST'])
+@login_required
+def potenser_nivaa2_route():
+    oppgaver = potenser_nivaa2_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 20000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Potenser – Nivå 2", melding="Du fullførte nivå 2! Sterkt jobba 🔥")
+
+    type_, oppgave_html, fasit, gale = oppgaver[nummer - 1]
+    alternativer = _fv_tall(fasit, gale) if type_ == "flervalg" else []
+
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        if type_ == "flervalg":
+            svar = request.form.get("svar_flervalg", "").strip()
+        else:
+            svar = request.form.get("svar", "").strip()
+
+        if svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        elif svar == fasit:
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        else:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 20000 + i, "link": f"/oppgaver/Potenser (enkle)/nivaa2?n={i}"} for i in range(1, total + 1)]
+    return render_template("potenser_nivaa2.html",
+        oppgave_html=oppgave_html, type=type_, alternativer=alternativer,
+        nummer=nummer, total=total, resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny, riktige_oppgaver=riktige_oppgaver
+    )
+
+
+# POTENSER NIVÅ 3 – potensregler, blandede uttrykk, sammensatte tekstoppgaver (ID 21001–21030)
+potenser_nivaa3_oppgaver = [
+    ("flervalg",f'Regn ut: {p(2,3)} · {p(2,2)} =', "32", ["10", "64", "16"]),
+    ("skriv",   f'Regn ut: {p(3,2)} + {p(4,2)} + {p(5,2)} =', "50", None),
+    ("flervalg",f'{p(2,5)} : {p(2,3)} =', "4", ["2", "8", "16"]),
+    ("tekst",   f'En kvadratisk hage har areal 144 m². Hva er sidelengden? (Hint: hva i andre potens gir 144?)', "12", None),
+    ("flervalg",f'Regn ut: ({p(2,3)})² =', "64", ["32", "16", "512"]),
+    ("skriv",   f'Regn ut: {p(2,4)} · {p(3,2)} =', "144", None),
+    ("flervalg",f'Hva er {p(10,3)} + {p(10,2)} + 10 ?', "1110", ["111", "10000", "1100"]),
+    ("tekst",   f'En kube har volum 216 cm³. Hva er sidelengden? (Hint: hva i tredje potens gir 216?)', "6", None),
+    ("flervalg",f'Regn ut: {p(5,2)} · {p(2,3)} =', "200", ["80", "400", "100"]),
+    ("skriv",   f'Regn ut: {p(2,6)} - {p(2,5)} =', "32", None),
+    ("flervalg",f'Regn ut: {p(4,3)} : {p(2,3)} =', "8", ["4", "2", "16"]),
+    ("tekst",   f'Befolkningen i en by tredobles hvert år. Etter 4 år er den 1 · {p(3,4)}. Regn ut.', "81", None),
+    ("skriv",   f'Regn ut: {p(3,3)} + {p(4,2)} =', "43", None),
+    ("flervalg",f'Hva er ({p(3,2)})² ?', "81", ["18", "36", "729"]),
+    ("tekst",   f'Et kvadrat har sidelengde {p(2,3)} cm. Hva er arealet?', "64", None),
+    ("flervalg",f'{p(10,5)} : {p(10,3)} =', "100", ["10", "1000", "2"]),
+    ("skriv",   f'Regn ut: {p(2,3)} · {p(5,2)} =', "200", None),
+    ("flervalg",f'Regn ut: {p(3,4)} - {p(4,3)} =', "17", ["0", "81", "64"]),
+    ("tekst",   f'Et papir brettes dobbelt 6 ganger. Antall lag = {p(2,6)}. Hvor mange lag?', "64", None),
+    ("flervalg",f'Regn ut: {p(6,2)} + {p(6,3)} =', "252", ["108", "72", "216"]),
+    ("skriv",   f'Regn ut: ({p(2,4)})² =', "256", None),
+    ("flervalg",f'{p(2,8)} : {p(2,4)} =', "16", ["8", "4", "32"]),
+    ("tekst",   f'En kube har sidelengde {p(2,2)} cm. Hva er volumet? (side³)', "64", None),
+    ("flervalg",f'Regn ut: {p(5,3)} + {p(5,2)} =', "150", ["25", "250", "100"]),
+    ("skriv",   f'Regn ut: {p(7,2)} + {p(7,3)} =', "392", None),
+    ("flervalg",f'Hva er {p(2,10)} : {p(2,5)} ?', "32", ["64", "5", "16"]),
+    ("tekst",   f'Et sjakkbrett: antall ruter = {p(8,2)}. Hvor mange ruter?', "64", None),
+    ("flervalg",f'Regn ut: {p(4,2)} · {p(3,3)} =', "432", ["48", "216", "144"]),
+    ("skriv",   f'Regn ut: {p(2,5)} + {p(3,4)} + {p(4,2)} =', "129", None),
+    ("tekst",   f'En bakterie deler seg og dobler seg hvert minutt. Etter 8 minutter er det {p(2,8)} bakterier. Hvor mange?', "256", None),
+]
+
+
+@app.route('/oppgaver/Potenser (enkle)/nivaa3', methods=['GET', 'POST'])
+@login_required
+def potenser_nivaa3_route():
+    oppgaver = potenser_nivaa3_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 21000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Potenser – Nivå 3", melding="Du fullførte nivå 3! Monstersterkt 💪🔥")
+
+    type_, oppgave_html, fasit, gale = oppgaver[nummer - 1]
+    alternativer = _fv_tall(fasit, gale) if type_ == "flervalg" else []
+
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        if type_ == "flervalg":
+            svar = request.form.get("svar_flervalg", "").strip()
+        else:
+            svar = request.form.get("svar", "").strip()
+
+        if svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        elif svar == fasit:
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        else:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 21000 + i, "link": f"/oppgaver/Potenser (enkle)/nivaa3?n={i}"} for i in range(1, total + 1)]
+    return render_template("potenser_nivaa3.html",
+        oppgave_html=oppgave_html, type=type_, alternativer=alternativer,
+        nummer=nummer, total=total, resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny, riktige_oppgaver=riktige_oppgaver
+    )
+
+
 # START SERVER
 if __name__ == '__main__':
     app.run(debug=True)
