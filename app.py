@@ -1849,6 +1849,257 @@ def potenser_nivaa3_route():
     )
 
 
+
+# ─────────────────────────────────────────────
+# OVERSLAG OG HODEREGNING
+# ─────────────────────────────────────────────
+
+@app.route('/oppgaver/overslag')
+@login_required
+def overslag():
+    return render_template('oppgaver_overslag.html')
+
+
+# OVERSLAG NIVÅ 1 – avrunding og enkle overslag (ID 22001–22030)
+overslag_nivaa1_oppgaver = [
+    ("skriv",   "Rund av 47 til nærmeste tier.", "50", None),
+    ("flervalg","Rund av 83 til nærmeste tier.", "80", ["70", "90", "100"]),
+    ("skriv",   "Rund av 125 til nærmeste hundre.", "100", None),
+    ("flervalg","Rund av 350 til nærmeste hundre.", "400", ["300", "350", "500"]),
+    ("skriv",   "Rund av 7,4 til nærmeste hele tall.", "7", None),
+    ("flervalg","Rund av 6,8 til nærmeste hele tall.", "7", ["6", "8", "10"]),
+    ("skriv",   "Rund av 2,45 til én desimal.", "2,5", None),
+    ("flervalg","Rund av 3,74 til én desimal.", "3,7", ["3,8", "4,0", "3,5"]),
+    ("tekst",   "En butikk selger en vare for 49 kr. Rund av til nærmeste tier for å gjøre et overslag.", "50", None),
+    ("flervalg","Rund av 999 til nærmeste hundre.", "1000", ["900", "990", "100"]),
+    ("skriv",   "Rund av 4 567 til nærmeste tusen.", "5000", None),
+    ("flervalg","Rund av 1 234 til nærmeste hundre.", "1200", ["1000", "1300", "1250"]),
+    ("tekst",   "En skole har 487 elever. Lag et overslag ved å runde til nærmeste hundre.", "500", None),
+    ("skriv",   "Rund av 0,36 til én desimal.", "0,4", None),
+    ("flervalg","Rund av 14,45 til nærmeste hele tall.", "14", ["15", "14,5", "13"]),
+    ("tekst",   "En buss kjører 38 km. Rund av til nærmeste tier.", "40", None),
+    ("flervalg","Rund av 8 500 til nærmeste tusen.", "9000", ["8000", "8500", "10000"]),
+    ("skriv",   "Rund av 55 til nærmeste hundre.", "100", None),
+    ("flervalg","Rund av 3,15 til én desimal.", "3,2", ["3,1", "3,0", "3,5"]),
+    ("tekst",   "Et tog bruker 2 timer og 47 minutter. Lag et overslag i hele timer.", "3", None),
+    ("skriv",   "Rund av 74 til nærmeste tier.", "70", None),
+    ("flervalg","Rund av 6 499 til nærmeste tusen.", "6000", ["7000", "6500", "5000"]),
+    ("tekst",   "En vare koster 295 kr. Lag et overslag til nærmeste hundre.", "300", None),
+    ("skriv",   "Rund av 1,75 til én desimal.", "1,8", None),
+    ("flervalg","Rund av 45 til nærmeste tier.", "50", ["40", "40", "60"]),
+    ("tekst",   "En svømmebasseng rommer 3 847 liter. Lag et overslag til nærmeste tusen.", "4000", None),
+    ("skriv",   "Rund av 9,95 til nærmeste hele tall.", "10", None),
+    ("flervalg","Rund av 2 750 til nærmeste tusen.", "3000", ["2000", "2800", "2500"]),
+    ("tekst",   "En eske veier 4,38 kg. Lag et overslag til nærmeste hele kg.", "4", None),
+    ("skriv",   "Rund av 365 til nærmeste hundre.", "400", None),
+]
+
+
+@app.route('/oppgaver/Overslag og hoderegning/nivaa1', methods=['GET', 'POST'])
+@login_required
+def overslag_nivaa1_route():
+    oppgaver = overslag_nivaa1_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 22000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Overslag og hoderegning – Nivå 1", melding="Du fullførte nivå 1! Bra jobba 🎉")
+
+    type_, oppgave_html, fasit, gale = oppgaver[nummer - 1]
+    alternativer = _fv_tall(fasit, gale) if type_ == "flervalg" else []
+
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        svar = request.form.get("svar_flervalg" if type_ == "flervalg" else "svar", "").strip().replace(".", ",")
+        fasit_norm = fasit.replace(".", ",")
+        if svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        elif svar == fasit_norm:
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        else:
+            resultat = f"❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 22000 + i, "link": f"/oppgaver/Overslag og hoderegning/nivaa1?n={i}"} for i in range(1, total + 1)]
+    return render_template("overslag_nivaa1.html",
+        oppgave_html=f'<p class="task-question-text">{oppgave_html}</p>',
+        type=type_, alternativer=alternativer,
+        nummer=nummer, total=total, resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny, riktige_oppgaver=riktige_oppgaver
+    )
+
+
+# OVERSLAG NIVÅ 2 – hoderegning og praktiske overslag (ID 23001–23030)
+overslag_nivaa2_oppgaver = [
+    ("tekst",   "Regn ut i hodet: 48 + 37", "85", None),
+    ("flervalg","Regn ut i hodet: 99 + 56", "155", ["145", "165", "150"]),
+    ("tekst",   "Regn ut i hodet: 125 - 48", "77", None),
+    ("flervalg","Regn ut i hodet: 203 - 97", "106", ["96", "116", "100"]),
+    ("tekst",   "En butikk selger 3 varer til 49 kr hver. Lag et overslag og regn ut nøyaktig.", "147", None),
+    ("flervalg","Regn ut i hodet: 25 · 4", "100", ["80", "120", "90"]),
+    ("tekst",   "Regn ut i hodet: 15 · 8", "120", None),
+    ("flervalg","Regn ut i hodet: 360 : 9", "40", ["36", "45", "30"]),
+    ("tekst",   "Du har 500 kr. Du kjøper noe for 187 kr. Hvor mye har du igjen? Regn i hodet.", "313", None),
+    ("flervalg","Lag overslag: 298 + 403", "700", ["600", "800", "650"]),
+    ("tekst",   "Regn ut i hodet: 450 + 380", "830", None),
+    ("flervalg","Regn ut i hodet: 12 · 12", "144", ["124", "132", "148"]),
+    ("tekst",   "En pakke med 6 flasker koster 54 kr. Hva koster én flaske?", "9", None),
+    ("flervalg","Lag overslag: 4 · 97", "400", ["300", "380", "450"]),
+    ("tekst",   "Regn ut i hodet: 750 - 290", "460", None),
+    ("flervalg","Regn ut i hodet: 48 · 5", "240", ["200", "250", "220"]),
+    ("tekst",   "Du kjøper 8 epler til 3,50 kr per eple. Hva blir totalen?", "28", None),
+    ("flervalg","Lag overslag: 19 · 21", "400", ["300", "380", "420"]),
+    ("tekst",   "Regn ut i hodet: 1000 - 347", "653", None),
+    ("flervalg","Regn ut i hodet: 64 : 4", "16", ["14", "18", "12"]),
+    ("tekst",   "En bil kjører 60 km/t. Hvor langt kjører den på 2,5 timer?", "150", None),
+    ("flervalg","Regn ut i hodet: 35 · 6", "210", ["180", "200", "240"]),
+    ("tekst",   "Regn ut i hodet: 99 · 3", "297", None),
+    ("flervalg","Lag overslag: 5 · 196", "1000", ["800", "900", "1100"]),
+    ("tekst",   "En klasse på 30 elever samler inn 45 kr hver. Hvor mye har de til sammen?", "1350", None),
+    ("flervalg","Regn ut i hodet: 144 : 12", "12", ["11", "13", "14"]),
+    ("tekst",   "Regn ut i hodet: 250 + 375 + 125", "750", None),
+    ("flervalg","Lag overslag: 38 · 52", "2000", ["1500", "1800", "2500"]),
+    ("tekst",   "Du har 200 kr. Du kjøper tre ting til 39 kr, 59 kr og 79 kr. Har du nok penger?", "ja", None),
+    ("flervalg","Regn ut i hodet: 72 : 8", "9", ["8", "7", "10"]),
+]
+
+
+@app.route('/oppgaver/Overslag og hoderegning/nivaa2', methods=['GET', 'POST'])
+@login_required
+def overslag_nivaa2_route():
+    oppgaver = overslag_nivaa2_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 23000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Overslag og hoderegning – Nivå 2", melding="Du fullførte nivå 2! Sterkt jobba 🔥")
+
+    type_, oppgave_html, fasit, gale = oppgaver[nummer - 1]
+    alternativer = _fv_tall(fasit, gale) if type_ == "flervalg" else []
+
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        svar = request.form.get("svar_flervalg" if type_ == "flervalg" else "svar", "").strip().lower().replace(".", ",")
+        fasit_norm = fasit.lower().replace(".", ",")
+        if svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        elif svar == fasit_norm:
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        else:
+            resultat = f"❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 23000 + i, "link": f"/oppgaver/Overslag og hoderegning/nivaa2?n={i}"} for i in range(1, total + 1)]
+    return render_template("overslag_nivaa2.html",
+        oppgave_html=f'<p class="task-question-text">{oppgave_html}</p>',
+        type=type_, alternativer=alternativer,
+        nummer=nummer, total=total, resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny, riktige_oppgaver=riktige_oppgaver
+    )
+
+
+# OVERSLAG NIVÅ 3 – sammensatte overslag og rimelighet (ID 24001–24030)
+overslag_nivaa3_oppgaver = [
+    ("tekst",   "En butikk selger 4 varer til 199 kr, 299 kr, 149 kr og 249 kr. Lag et overslag og finn totalen.", "896", None),
+    ("flervalg","Hva er det beste overslaget for 49 · 51?", "2500", ["2000", "3000", "2400"]),
+    ("tekst",   "Regn ut i hodet: 999 + 1 + 999 + 1", "2000", None),
+    ("flervalg","En bil kjører 110 km/t i ca. 3 timer. Hva er et godt overslag på distansen?", "330", ["200", "400", "300"]),
+    ("tekst",   "Regn ut i hodet: 125 · 8", "1000", None),
+    ("flervalg","Hva er det beste overslaget for 198 · 5?", "1000", ["900", "1100", "800"]),
+    ("tekst",   "Du skal kjøpe 12 bøker til 89 kr stykket. Lag et overslag.", "1080", None),
+    ("flervalg","Regn ut i hodet: 50 · 36", "1800", ["1600", "2000", "1500"]),
+    ("tekst",   "En restaurant serverer 47 gjester. Regningen per person er ca. 205 kr. Lag et overslag på totalen.", "9350", None),
+    ("flervalg","Regn ut i hodet: 375 + 625", "1000", ["900", "1100", "950"]),
+    ("tekst",   "Regn ut i hodet: 64 · 25", "1600", None),
+    ("flervalg","En fotballkamp varer 90 minutter. Hvor mange timer er det?", "1,5", ["2", "1", "0,5"]),
+    ("tekst",   "Regn ut i hodet: 5 000 - 1 875", "3125", None),
+    ("flervalg","Hva er det beste overslaget for 7 · 698?", "4900", ["4200", "5600", "4000"]),
+    ("tekst",   "En klasse med 28 elever skal reise. Bussen koster 3 500 kr totalt. Hva betaler hver elev? Lag overslag.", "125", None),
+    ("flervalg","Regn ut i hodet: 88 + 77 + 55", "220", ["200", "230", "210"]),
+    ("tekst",   "Regn ut i hodet: 999 · 8", "7992", None),
+    ("flervalg","En matbutikk har 365 dager i året. Overslag: hvor mange uker er det?", "52", ["50", "55", "48"]),
+    ("tekst",   "Regn ut i hodet: 450 : 9 + 350 : 7", "100", None),
+    ("flervalg","Hva er det beste overslaget for 313 · 3?", "900", ["600", "1200", "1000"]),
+    ("tekst",   "Du kjøper 5 ting til 39 kr, 41 kr, 62 kr, 58 kr og 100 kr. Lag overslag og nøyaktig sum.", "300", None),
+    ("flervalg","Regn ut i hodet: 2 500 : 25", "100", ["50", "75", "125"]),
+    ("tekst",   "En svømmehall har 48 baner med 12 svømmere per bane. Regn ut totalt antall svømmere i hodet.", "576", None),
+    ("flervalg","Hva er et godt overslag for 4,9 · 20?", "100", ["80", "90", "120"]),
+    ("tekst",   "Regn ut i hodet: 75 · 4 + 25 · 4", "400", None),
+    ("flervalg","En tog kjører 320 km på 2 timer. Hva er gjennomsnittsfarten i km/t?", "160", ["140", "180", "200"]),
+    ("tekst",   "Regn ut i hodet: 11 · 11 · 11", "1331", None),
+    ("flervalg","Hva er det beste overslaget for 19 · 19?", "400", ["300", "361", "500"]),
+    ("tekst",   "En butikk selger 1 200 varer per dag. Hvor mange varer selger de på en uke?", "8400", None),
+    ("flervalg","Regn ut i hodet: 3 600 : 12 + 2 400 : 8", "600", ["400", "700", "500"]),
+]
+
+
+@app.route('/oppgaver/Overslag og hoderegning/nivaa3', methods=['GET', 'POST'])
+@login_required
+def overslag_nivaa3_route():
+    oppgaver = overslag_nivaa3_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 24000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Overslag og hoderegning – Nivå 3", melding="Du fullførte nivå 3! Monstersterkt 💪🔥")
+
+    type_, oppgave_html, fasit, gale = oppgaver[nummer - 1]
+    alternativer = _fv_tall(fasit, gale) if type_ == "flervalg" else []
+
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        svar = request.form.get("svar_flervalg" if type_ == "flervalg" else "svar", "").strip().lower().replace(".", ",")
+        fasit_norm = fasit.lower().replace(".", ",")
+        if svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        elif svar == fasit_norm:
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        else:
+            resultat = f"❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 24000 + i, "link": f"/oppgaver/Overslag og hoderegning/nivaa3?n={i}"} for i in range(1, total + 1)]
+    return render_template("overslag_nivaa3.html",
+        oppgave_html=f'<p class="task-question-text">{oppgave_html}</p>',
+        type=type_, alternativer=alternativer,
+        nummer=nummer, total=total, resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny, riktige_oppgaver=riktige_oppgaver
+    )
+
+
 # START SERVER
 if __name__ == '__main__':
     app.run(debug=True)
