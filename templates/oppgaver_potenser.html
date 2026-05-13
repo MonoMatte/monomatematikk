@@ -1,0 +1,26 @@
+{% extends "oppgaver_layout.html" %}
+{% block title %}Potenser{% endblock %}
+{% block task_content %}
+
+<a href="#" class="close-btn" onclick="goToLastTopic()">✕</a>
+<h1>Potenser (enkle)</h1>
+<h3>Velg nivå</h3>
+<div class="level-buttons">
+    <a href="/oppgaver/Potenser (enkle)/nivaa1" class="level-btn level-btn-easy">Nivå 1</a>
+    <a href="/oppgaver/Potenser (enkle)/nivaa2" class="level-btn level-btn-medium">Nivå 2</a>
+    <a href="/oppgaver/Potenser (enkle)/nivaa3" class="level-btn level-btn-hard">Nivå 3</a>
+</div>
+<div class="theory-box mt-4">
+    <h3>Forklaring</h3>
+    <p>En potens er et tall multiplisert med seg selv et bestemt antall ganger. For eksempel: 2³ = 2 · 2 · 2 = 8. Grunntallet er 2, eksponenten er 3.</p>
+    <ul>
+        <li><strong>Nivå 1:</strong> Beregn enkle potenser (2², 3², 4² osv.)</li>
+        <li><strong>Nivå 2:</strong> Potenser med større tall og eksponenter</li>
+        <li><strong>Nivå 3:</strong> Sammensatte uttrykk og tekstoppgaver med potenser</li>
+    </ul>
+</div>
+
+<script>
+function goToLastTopic() { window.location.href = "/oppgaver/trinn/8"; }
+</script>
+{% endblock %}
