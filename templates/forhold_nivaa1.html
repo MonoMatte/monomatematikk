@@ -1,0 +1,54 @@
+{% extends "oppgaver_layout.html" %}
+{% block title %}Forhold og brøk–desimal–prosent – Nivå 1{% endblock %}
+{% block task_content %}
+
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const hasN = urlParams.has("n");
+const savedTask = localStorage.getItem("lastTask_forhold_nivaa1");
+if (!hasN && savedTask && savedTask !== "{{ nummer }}") {
+    window.location.href = "?n=" + savedTask;
+}
+</script>
+
+<a href="#" class="close-btn" onclick="goToLastTopic()">✕</a>
+<h1>Forhold og brøk–desimal–prosent – Nivå 1</h1>
+<p>Oppgave {{ nummer }} av {{ total }}</p>
+
+<div class="task-box">
+    <p class="task-question-title">Oppgave:</p>
+    <div class="pot-oppgave-visning">{{ oppgave_html | safe }}</div>
+
+    {% if type == "flervalg" %}
+        <form method="POST" class="flervalg-grid">
+            {% for alt in alternativer %}
+            <button type="submit" name="svar_flervalg" value="{{ alt }}" class="flervalg-kort flervalg-kort-tall">
+                {{ alt }}
+            </button>
+            {% endfor %}
+        </form>
+    {% else %}
+        <form method="POST" class="task-form">
+            <input type="text" name="svar" class="task-input" placeholder="Skriv svaret ditt" autocomplete="off">
+            <button class="task-submit">Sjekk svar</button>
+        </form>
+    {% endif %}
+
+    {% if resultat %}
+        <div class="task-result {% if riktig %}correct-glow{% else %}wrong-glow{% endif %}">
+            {{ resultat }}
+        </div>
+    {% endif %}
+</div>
+
+{% if riktig %}
+    <a href="?n={{ nummer + 1 }}" class="next-btn">Neste oppgave →</a>
+{% endif %}
+
+<script>
+localStorage.setItem("lastTask_forhold_nivaa1", "{{ nummer }}");
+localStorage.setItem("lastSubtopic", "Forhold og brøk–desimal–prosent");
+localStorage.setItem("lastLevel", "nivaa1");
+function goToLastTopic() { window.location.href = "/oppgaver/trinn/8"; }
+</script>
+{% endblock %}
