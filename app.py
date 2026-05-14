@@ -2100,6 +2100,264 @@ def overslag_nivaa3_route():
     )
 
 
+
+# ─────────────────────────────────────────────
+# FORHOLD OG BRØK–DESIMAL–PROSENT
+# ─────────────────────────────────────────────
+
+@app.route('/oppgaver/forhold')
+@login_required
+def forhold():
+    return render_template('oppgaver_forhold.html')
+
+
+def _fv_tall(riktig, gale):
+    import random
+    alts = [riktig] + gale
+    random.shuffle(alts)
+    return alts
+
+
+# NIVÅ 1 – omgjøring brøk ↔ desimal ↔ prosent (ID 25001–25030)
+forhold_nivaa1_oppgaver = [
+    ("flervalg", "Hva er 1/2 som prosent?",                                         "50%",   ["25%", "75%", "40%"]),
+    ("skriv",    "Hva er 1/4 som prosent?",                                          "25%",   None),
+    ("flervalg", "Hva er 3/4 som prosent?",                                          "75%",   ["50%", "25%", "80%"]),
+    ("skriv",    "Hva er 1/5 som prosent?",                                          "20%",   None),
+    ("flervalg", "Hva er 2/5 som prosent?",                                          "40%",   ["20%", "50%", "35%"]),
+    ("skriv",    "Hva er 1/10 som prosent?",                                         "10%",   None),
+    ("flervalg", "Hva er 3/10 som prosent?",                                         "30%",   ["25%", "33%", "20%"]),
+    ("skriv",    "Hva er 1/2 som desimaltall?",                                      "0,5",   None),
+    ("flervalg", "Hva er 1/4 som desimaltall?",                                      "0,25",  ["0,4", "0,5", "0,2"]),
+    ("skriv",    "Hva er 3/4 som desimaltall?",                                      "0,75",  None),
+    ("flervalg", "Hva er 1/5 som desimaltall?",                                      "0,2",   ["0,5", "0,15", "0,25"]),
+    ("skriv",    "Hva er 1/10 som desimaltall?",                                     "0,1",   None),
+    ("flervalg", "Hva er 0,5 som prosent?",                                          "50%",   ["5%", "0,5%", "55%"]),
+    ("skriv",    "Hva er 0,25 som prosent?",                                         "25%",   None),
+    ("flervalg", "Hva er 0,1 som prosent?",                                          "10%",   ["1%", "100%", "15%"]),
+    ("skriv",    "Hva er 0,75 som prosent?",                                         "75%",   None),
+    ("flervalg", "Hva er 0,2 som prosent?",                                          "20%",   ["2%", "12%", "25%"]),
+    ("skriv",    "Hva er 50% som desimaltall?",                                      "0,5",   None),
+    ("flervalg", "Hva er 25% som desimaltall?",                                      "0,25",  ["2,5", "0,025", "0,3"]),
+    ("skriv",    "Hva er 10% som desimaltall?",                                      "0,1",   None),
+    ("flervalg", "Hva er 75% som desimaltall?",                                      "0,75",  ["7,5", "0,075", "0,8"]),
+    ("skriv",    "Hva er 50% som brøk? Skriv teller/nevner, f.eks. 1/2",            "1/2",   None),
+    ("flervalg", "Hva er 25% som brøk?",                                             "1/4",   ["1/2", "2/5", "1/5"]),
+    ("skriv",    "Hva er 20% som brøk (forenklet)?",                                "1/5",   None),
+    ("flervalg", "Hva er 10% som brøk?",                                             "1/10",  ["1/5", "1/100", "1/9"]),
+    ("tekst",    "I en klasse på 30 elever er 15 jenter. Hva er andelen jenter som prosent?", "50%", None),
+    ("tekst",    "En butikk selger 4 av 10 varer. Skriv dette som desimaltall.",     "0,4",   None),
+    ("flervalg", "Hva er 0,4 som prosent?",                                          "40%",   ["4%", "44%", "14%"]),
+    ("tekst",    "En pizza er delt i 4 biter. Du spiser 1 bit. Hva er det som prosent?", "25%", None),
+    ("skriv",    "Hva er 3/5 som prosent?",                                          "60%",   None),
+]
+
+
+@app.route('/oppgaver/Forhold og brøk–desimal–prosent/nivaa1', methods=['GET', 'POST'])
+@login_required
+def forhold_nivaa1_route():
+    oppgaver = forhold_nivaa1_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 25000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Forhold og brøk–desimal–prosent – Nivå 1", melding="Du fullførte nivå 1! Bra jobba 🎉")
+
+    type_, oppgave_html, fasit, gale = oppgaver[nummer - 1]
+    alternativer = _fv_tall(fasit, gale) if type_ == "flervalg" else []
+
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        svar = request.form.get("svar_flervalg" if type_ == "flervalg" else "svar", "").strip().replace(".", ",")
+        fasit_norm = fasit.replace(".", ",")
+        if svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        elif svar.lower() == fasit_norm.lower():
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        else:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 25000 + i, "link": f"/oppgaver/Forhold og brøk–desimal–prosent/nivaa1?n={i}"} for i in range(1, total + 1)]
+    return render_template("forhold_nivaa1.html",
+        oppgave_html=f'<p class="task-question-text">{oppgave_html}</p>',
+        type=type_, alternativer=alternativer,
+        nummer=nummer, total=total, resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny, riktige_oppgaver=riktige_oppgaver
+    )
+
+
+# NIVÅ 2 – forhold og forenkling (ID 26001–26030)
+forhold_nivaa2_oppgaver = [
+    ("skriv",    "Forenkle forholdet 4:8",                                           "1:2",   None),
+    ("flervalg", "Forenkle forholdet 6:9",                                           "2:3",   ["3:4", "1:2", "6:9"]),
+    ("skriv",    "Forenkle forholdet 10:15",                                         "2:3",   None),
+    ("flervalg", "Forenkle forholdet 8:12",                                          "2:3",   ["4:6", "1:2", "3:4"]),
+    ("skriv",    "Forenkle forholdet 15:20",                                         "3:4",   None),
+    ("flervalg", "Forenkle forholdet 12:16",                                         "3:4",   ["2:3", "6:8", "1:2"]),
+    ("tekst",    "I en klasse er det 12 jenter og 18 gutter. Hva er forholdet jenter:gutter (forenklet)?", "2:3", None),
+    ("flervalg", "Forenkle forholdet 20:30",                                         "2:3",   ["4:6", "1:2", "3:5"]),
+    ("skriv",    "Forenkle forholdet 9:27",                                          "1:3",   None),
+    ("flervalg", "Forenkle forholdet 14:21",                                         "2:3",   ["7:10", "1:2", "4:7"]),
+    ("tekst",    "En oppskrift bruker 2 dl mel og 4 dl vann. Hva er forholdet mel:vann?", "1:2", None),
+    ("skriv",    "Forenkle forholdet 25:100",                                        "1:4",   None),
+    ("flervalg", "Forenkle forholdet 16:24",                                         "2:3",   ["4:6", "8:12", "1:2"]),
+    ("tekst",    "Et kart har målestokk 1:50000. Hva tilsvarer 1 cm på kartet i virkeligheten? Skriv antall cm.", "50000", None),
+    ("flervalg", "Forenkle forholdet 30:45",                                         "2:3",   ["3:4", "6:9", "1:2"]),
+    ("skriv",    "Forenkle forholdet 18:24",                                         "3:4",   None),
+    ("tekst",    "En blanding er 3 deler juice og 1 del vann. Hva er prosenten juice?", "75%", None),
+    ("flervalg", "Hva er forholdet 1:4 som prosent (den første delen)?",             "25%",   ["20%", "40%", "10%"]),
+    ("skriv",    "Forenkle forholdet 100:250",                                       "2:5",   None),
+    ("flervalg", "Hva er forholdet 2:5 som prosent (den første delen)?",             "40%",   ["20%", "25%", "50%"]),
+    ("tekst",    "En bil kjører 300 km på 4 timer. Hva er gjennomsnittsfarten i km/t?", "75", None),
+    ("flervalg", "Forenkle forholdet 36:48",                                         "3:4",   ["2:3", "6:8", "9:12"]),
+    ("skriv",    "Forenkle forholdet 21:35",                                         "3:5",   None),
+    ("tekst",    "En butikk selger juice: 1,5 liter for 30 kr og 1 liter for 22 kr. Hva koster 1 dl av den billigste? Skriv i kr.", "2", None),
+    ("flervalg", "Hva er forholdet 3:4 som desimaltall (første del av totalen)?",   "0,75",  ["0,3", "0,25", "0,8"]),
+    ("skriv",    "Forenkle forholdet 45:60",                                         "3:4",   None),
+    ("tekst",    "I en fruktblanding er det 3 epler og 5 appelsiner. Hva er andelen epler som prosent? Rund av.", "38%", None),
+    ("flervalg", "Forenkle forholdet 50:75",                                         "2:3",   ["5:7", "1:2", "25:38"]),
+    ("skriv",    "Forenkle forholdet 28:42",                                         "2:3",   None),
+    ("tekst",    "En skole har 200 elever. 80 er i 8. trinn. Hva er andelen som brøk (forenklet)?", "2/5", None),
+]
+
+
+@app.route('/oppgaver/Forhold og brøk–desimal–prosent/nivaa2', methods=['GET', 'POST'])
+@login_required
+def forhold_nivaa2_route():
+    oppgaver = forhold_nivaa2_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 26000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Forhold og brøk–desimal–prosent – Nivå 2", melding="Du fullførte nivå 2! Sterkt jobba 🔥")
+
+    type_, oppgave_html, fasit, gale = oppgaver[nummer - 1]
+    alternativer = _fv_tall(fasit, gale) if type_ == "flervalg" else []
+
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        svar = request.form.get("svar_flervalg" if type_ == "flervalg" else "svar", "").strip().replace(".", ",")
+        fasit_norm = fasit.replace(".", ",")
+        if svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        elif svar.lower() == fasit_norm.lower():
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        else:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 26000 + i, "link": f"/oppgaver/Forhold og brøk–desimal–prosent/nivaa2?n={i}"} for i in range(1, total + 1)]
+    return render_template("forhold_nivaa2.html",
+        oppgave_html=f'<p class="task-question-text">{oppgave_html}</p>',
+        type=type_, alternativer=alternativer,
+        nummer=nummer, total=total, resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny, riktige_oppgaver=riktige_oppgaver
+    )
+
+
+# NIVÅ 3 – sammensatte tekstoppgaver (ID 27001–27030)
+forhold_nivaa3_oppgaver = [
+    ("tekst",    "En jakke koster 600 kr. Den er satt ned 25%. Hva er den nye prisen?",                         "450",   None),
+    ("flervalg", "0,375 som prosent er:",                                                                        "37,5%", ["3,75%", "375%", "38%"]),
+    ("tekst",    "I en klasse er 60% jenter. Det er 30 elever totalt. Hvor mange er jenter?",                   "18",    None),
+    ("flervalg", "Hva er 5/8 som desimaltall?",                                                                  "0,625", ["0,58", "0,68", "0,5"]),
+    ("tekst",    "En butikk øker prisen med 20%. Varen kostet 250 kr. Hva er ny pris?",                         "300",   None),
+    ("flervalg", "Hva er forholdet 3:5 som prosent av totalen (første del)?",                                   "37,5%", ["60%", "30%", "40%"]),
+    ("tekst",    "Et tall er 0,6. Skriv det som brøk (forenklet).",                                             "3/5",   None),
+    ("flervalg", "En by hadde 10 000 innbyggere og vokste med 15%. Hvor mange er det nå?",                      "11500", ["10150", "11000", "12000"]),
+    ("tekst",    "Hva er 7/8 som prosent? (Rund av til én desimal)",                                            "87,5%", None),
+    ("flervalg", "En elev fikk 18 av 24 oppgaver riktig. Hva er prosentandelen riktige?",                       "75%",   ["70%", "80%", "72%"]),
+    ("tekst",    "Et produkt er satt ned fra 400 kr til 300 kr. Hvor mange prosent er det satt ned?",           "25%",   None),
+    ("flervalg", "Hva er 0,125 som brøk (forenklet)?",                                                          "1/8",   ["1/4", "1/6", "1/12"]),
+    ("tekst",    "En fotballkamp: laget vant 9 og tapte 6 av 15 kamper. Hva er vinnerprosenten?",               "60%",   None),
+    ("flervalg", "Hva er 2:3 som desimaltall (første del av totalen)?",                                         "0,4",   ["0,6", "0,5", "0,25"]),
+    ("tekst",    "Et tall er 0,875. Skriv det som brøk (forenklet).",                                           "7/8",   None),
+    ("flervalg", "En vare koster 1 200 kr. Du får 30% rabatt. Hva betaler du?",                                 "840",   ["900", "960", "780"]),
+    ("tekst",    "En klasse har forholdet 3:2 mellom jenter og gutter. Det er 25 elever totalt. Hvor mange jenter?", "15", None),
+    ("flervalg", "Hva er 66,6% tilnærmet som brøk?",                                                            "2/3",   ["3/4", "1/2", "5/6"]),
+    ("tekst",    "Et tall øker fra 80 til 100. Hvor mange prosent økte det?",                                   "25%",   None),
+    ("flervalg", "0,04 som prosent er:",                                                                         "4%",    ["0,4%", "40%", "0,04%"]),
+    ("tekst",    "En skole har 450 elever. 54 er syke én dag. Hva er fraværsprosenten?",                        "12%",   None),
+    ("flervalg", "Hva er 12,5% som brøk?",                                                                      "1/8",   ["1/4", "1/6", "1/10"]),
+    ("tekst",    "En butikk selger epler til 25 kr/kg og appelsiner til 40 kr/kg. Du kjøper 2 kg epler og 0,5 kg appelsiner. Hva betaler du?", "70", None),
+    ("flervalg", "Hva er 37,5% som brøk?",                                                                      "3/8",   ["3/5", "4/10", "1/3"]),
+    ("tekst",    "En person tjener 35 000 kr i måneden og betaler 28% i skatt. Hvor mye betaler de i skatt?",   "9800",  None),
+    ("flervalg", "Et tall synker fra 200 til 150. Hvor mange prosent er nedgangen?",                            "25%",   ["20%", "30%", "33%"]),
+    ("tekst",    "Forholdet mellom bredde og høyde på en skjerm er 16:9. Bredden er 48 cm. Hva er høyden?",     "27",    None),
+    ("flervalg", "Hva er 0,0625 som brøk?",                                                                     "1/16",  ["1/8", "1/12", "1/4"]),
+    ("tekst",    "Et tall er 1,25. Skriv det som blandet tall (brøk), f.eks. 1 1/4",                            "1 1/4", None),
+    ("tekst",    "En elev fikk 45 av 60 poeng. Hva er prosentandelen?",                                         "75%",   None),
+]
+
+
+@app.route('/oppgaver/Forhold og brøk–desimal–prosent/nivaa3', methods=['GET', 'POST'])
+@login_required
+def forhold_nivaa3_route():
+    oppgaver = forhold_nivaa3_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 27000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Forhold og brøk–desimal–prosent – Nivå 3", melding="Du fullførte nivå 3! Monstersterkt 💪🔥")
+
+    type_, oppgave_html, fasit, gale = oppgaver[nummer - 1]
+    alternativer = _fv_tall(fasit, gale) if type_ == "flervalg" else []
+
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        svar = request.form.get("svar_flervalg" if type_ == "flervalg" else "svar", "").strip().replace(".", ",")
+        fasit_norm = fasit.replace(".", ",")
+        if svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        elif svar.lower() == fasit_norm.lower():
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        else:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 27000 + i, "link": f"/oppgaver/Forhold og brøk–desimal–prosent/nivaa3?n={i}"} for i in range(1, total + 1)]
+    return render_template("forhold_nivaa3.html",
+        oppgave_html=f'<p class="task-question-text">{oppgave_html}</p>',
+        type=type_, alternativer=alternativer,
+        nummer=nummer, total=total, resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny, riktige_oppgaver=riktige_oppgaver
+    )
+
+
 # START SERVER
 if __name__ == '__main__':
     app.run(debug=True)
