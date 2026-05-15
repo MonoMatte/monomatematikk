@@ -2615,6 +2615,254 @@ def variabler_nivaa3_route():
     )
 
 
+
+# ─────────────────────────────────────────────
+# ENKLE ALGEBRAISKE UTTRYKK
+# ─────────────────────────────────────────────
+
+@app.route('/oppgaver/enkle_uttrykk')
+@login_required
+def enkle_uttrykk():
+    return render_template('oppgaver_enkle_uttrykk.html')
+
+
+# NIVÅ 1 – lese og tolke enkle uttrykk (ID 31001–31030)
+enkle_uttrykk_nivaa1_oppgaver = [
+    ("flervalg", "Hva er koeffisienten i uttrykket 5x?",                               "5",          ["x", "1", "0"]),
+    ("flervalg", "Hva er konstantleddet i uttrykket 3x + 7?",                          "7",          ["3", "x", "10"]),
+    ("skriv",    "Hvor mange ledd har uttrykket 4x + 2y - 3?",                         "3",          None),
+    ("flervalg", "Hva er koeffisienten til x i uttrykket 8x + 4?",                     "8",          ["4", "2", "12"]),
+    ("skriv",    "Hva er verdien av 3x + 1 når x = 0?",                                "1",          None),
+    ("flervalg", "Hva kalles tallene foran variablene i et uttrykk?",                  "Koeffisienter", ["Konstanter", "Eksponenter", "Ledd"]),
+    ("skriv",    "Hva er verdien av 2x + 4 når x = 3?",                                "10",         None),
+    ("flervalg", "Hva er verdien av 5x - 3 når x = 2?",                                "7",          ["10", "13", "3"]),
+    ("tekst",    "Et uttrykk er 4 + n. Hva er verdien når n = 6?",                     "10",         None),
+    ("flervalg", "Hva er verdien av 3y + 6 når y = 4?",                                "18",         ["12", "24", "10"]),
+    ("skriv",    "Hva er verdien av 7 - x når x = 3?",                                 "4",          None),
+    ("flervalg", "Hva er verdien av 2a + 2b når a = 3 og b = 2?",                      "10",         ["12", "7", "14"]),
+    ("tekst",    "En butikk selger x antall varer til 10 kr stykket. Uttrykket er 10x. Hva er verdien når x = 5?", "50", None),
+    ("skriv",    "Hva er verdien av 6 + 2t når t = 4?",                                "14",         None),
+    ("flervalg", "Hvilket uttrykk beskriver 'et tall x pluss fire'?",                   "x + 4",      ["4x", "x - 4", "4 - x"]),
+    ("skriv",    "Hva er verdien av 10 - 3k når k = 2?",                               "4",          None),
+    ("flervalg", "Hva er verdien av 4n - 1 når n = 3?",                                "11",         ["12", "13", "7"]),
+    ("tekst",    "Ole er x år gammel. Neste år er han x + 1 år. Hva er uttrykket for alderen om 5 år?", "x + 5", None),
+    ("skriv",    "Hva er verdien av a + b + c når a = 2, b = 3, c = 4?",               "9",          None),
+    ("flervalg", "Hvilket uttrykk betyr 'tre ganger et tall x'?",                      "3x",         ["x + 3", "x³", "x : 3"]),
+    ("tekst",    "En eske har x kjeks. Du spiser 4. Skriv uttrykket for antall kjeks igjen.", "x - 4", None),
+    ("flervalg", "Hva er verdien av 5 + 3m når m = 0?",                                "5",          ["3", "8", "15"]),
+    ("skriv",    "Hva er verdien av 2x + 3y når x = 4 og y = 2?",                      "14",         None),
+    ("flervalg", "Hva kalles x i uttrykket 4x + 3?",                                   "Variabel",   ["Koeffisient", "Konstant", "Ledd"]),
+    ("tekst",    "En rektangel har sidelengder x og 5. Skriv uttrykket for omkretsen.", "2x + 10",    None),
+    ("flervalg", "Hva er verdien av 8 - 2y når y = 3?",                                "2",          ["4", "6", "14"]),
+    ("skriv",    "Hva er verdien av 3x - 2x + 5 når x = 4?",                           "9",          None),
+    ("flervalg", "Hva er verdien av 4(x + 1) når x = 2?",                              "12",         ["8", "9", "16"]),
+    ("tekst",    "Du har 20 kr og bruker x kr. Skriv uttrykket for pengene du har igjen.", "20 - x", None),
+    ("skriv",    "Hva er verdien av 9 - x + 2 når x = 5?",                             "6",          None),
+]
+
+
+@app.route('/oppgaver/Enkle algebraiske uttrykk/nivaa1', methods=['GET', 'POST'])
+@login_required
+def enkle_uttrykk_nivaa1_route():
+    oppgaver = enkle_uttrykk_nivaa1_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 31000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Enkle algebraiske uttrykk – Nivå 1", melding="Du fullførte nivå 1! Bra jobba 🎉")
+
+    type_, oppgave_html, fasit, gale = oppgaver[nummer - 1]
+    alternativer = _fv_tall(fasit, gale) if type_ == "flervalg" else []
+
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        svar = request.form.get("svar_flervalg" if type_ == "flervalg" else "svar", "").strip()
+        if svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        elif svar.lower() == fasit.lower():
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        else:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 31000 + i, "link": f"/oppgaver/Enkle algebraiske uttrykk/nivaa1?n={i}"} for i in range(1, total + 1)]
+    return render_template("enkle_uttrykk_nivaa1.html",
+        oppgave_html=f'<p class="task-question-text">{oppgave_html}</p>',
+        type=type_, alternativer=alternativer,
+        nummer=nummer, total=total, resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny, riktige_oppgaver=riktige_oppgaver
+    )
+
+
+# NIVÅ 2 – forenkle uttrykk ved å samle like ledd (ID 32001–32030)
+enkle_uttrykk_nivaa2_oppgaver = [
+    ("skriv",    "Forenkle: 3x + 2x",                                                  "5x",         None),
+    ("flervalg", "Forenkle: 5y + 3y",                                                  "8y",         ["2y", "15y", "53y"]),
+    ("skriv",    "Forenkle: 7a - 3a",                                                  "4a",         None),
+    ("flervalg", "Forenkle: 4x + x",                                                   "5x",         ["4x", "3x", "44x"]),
+    ("skriv",    "Forenkle: 6n - 2n + n",                                              "5n",         None),
+    ("flervalg", "Forenkle: 3x + 2y + x",                                              "4x + 2y",    ["5x + 2y", "3x + 3y", "5xy"]),
+    ("tekst",    "En klasse kjøper x blyanter og 3x bøker. Skriv det totale antallet som ett uttrykk.", "4x", None),
+    ("flervalg", "Forenkle: 5a + 3b - 2a",                                             "3a + 3b",    ["3a - 3b", "6ab", "8a + 3b"]),
+    ("skriv",    "Forenkle: 2x + 3 + 4x + 1",                                          "6x + 4",     None),
+    ("flervalg", "Forenkle: 8m - 3m + 2",                                              "5m + 2",     ["5m - 2", "3m + 2", "11m"]),
+    ("skriv",    "Forenkle: 4y + 2 - y - 1",                                           "3y + 1",     None),
+    ("flervalg", "Forenkle: 3x + 4x - 2x",                                             "5x",         ["9x", "x", "7x"]),
+    ("tekst",    "Ole har 2x kr og Kari har 5x kr. Skriv totalen som ett uttrykk.",    "7x",         None),
+    ("skriv",    "Forenkle: 6a + 3b - 4a + b",                                         "2a + 4b",    None),
+    ("flervalg", "Forenkle: 2(x + 3) + x",                                             "3x + 6",     ["2x + 3", "3x + 3", "2x + 6"]),
+    ("skriv",    "Forenkle: 5x + 2y - 3x - y",                                        "2x + y",     None),
+    ("flervalg", "Forenkle: 4n + 2 + 3n - 5",                                         "7n - 3",     ["7n + 3", "n - 3", "7n + 7"]),
+    ("tekst",    "En rektangel har lengde 3x + 2 og bredde 2. Hva er arealet som uttrykk?", "6x + 4", None),
+    ("skriv",    "Forenkle: 3(2x + 1)",                                                "6x + 3",     None),
+    ("flervalg", "Forenkle: 2(3a - 2) + a",                                            "7a - 4",     ["6a - 4", "7a + 4", "5a - 2"]),
+    ("skriv",    "Forenkle: 4x + 3 - 2x - 3",                                         "2x",         None),
+    ("flervalg", "Forenkle: 5(x + 2) - 3x",                                            "2x + 10",    ["5x + 2", "2x - 10", "8x + 10"]),
+    ("tekst",    "En butikk har x epler og dobbelt så mange appelsiner. Skriv totalen.", "3x",        None),
+    ("skriv",    "Forenkle: 2x + 4y + 3x - 2y",                                        "5x + 2y",    None),
+    ("flervalg", "Forenkle: 6a - (2a + 1)",                                             "4a - 1",     ["4a + 1", "8a - 1", "4a"]),
+    ("skriv",    "Forenkle: 3(x + y) + 2(x - y)",                                      "5x + y",     None),
+    ("flervalg", "Forenkle: 4m + 5 - m - 2",                                           "3m + 3",     ["5m + 3", "3m - 3", "4m + 3"]),
+    ("tekst",    "En hage har lengde 2x + 3 og bredde x + 1. Skriv uttrykket for omkretsen.", "6x + 8", None),
+    ("skriv",    "Forenkle: 5(2x - 3) - 4x",                                           "6x - 15",    None),
+    ("flervalg", "Forenkle: 8y - 3(y - 2)",                                             "5y + 6",     ["5y - 6", "11y + 6", "5y - 2"]),
+]
+
+
+@app.route('/oppgaver/Enkle algebraiske uttrykk/nivaa2', methods=['GET', 'POST'])
+@login_required
+def enkle_uttrykk_nivaa2_route():
+    oppgaver = enkle_uttrykk_nivaa2_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 32000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Enkle algebraiske uttrykk – Nivå 2", melding="Du fullførte nivå 2! Sterkt jobba 🔥")
+
+    type_, oppgave_html, fasit, gale = oppgaver[nummer - 1]
+    alternativer = _fv_tall(fasit, gale) if type_ == "flervalg" else []
+
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        svar = request.form.get("svar_flervalg" if type_ == "flervalg" else "svar", "").strip()
+        if svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        elif svar.lower().replace(" ", "") == fasit.lower().replace(" ", ""):
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        else:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 32000 + i, "link": f"/oppgaver/Enkle algebraiske uttrykk/nivaa2?n={i}"} for i in range(1, total + 1)]
+    return render_template("enkle_uttrykk_nivaa2.html",
+        oppgave_html=f'<p class="task-question-text">{oppgave_html}</p>',
+        type=type_, alternativer=alternativer,
+        nummer=nummer, total=total, resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny, riktige_oppgaver=riktige_oppgaver
+    )
+
+
+# NIVÅ 3 – sette opp uttrykk fra tekstoppgaver (ID 33001–33030)
+enkle_uttrykk_nivaa3_oppgaver = [
+    ("tekst",    "En bil kjører x km/t. Skriv uttrykket for distansen etter 3 timer.",                 "3x",         None),
+    ("flervalg", "Hva er uttrykket for 'fem mer enn det dobbelte av x'?",                              "2x + 5",     ["5x + 2", "2 + 5x", "x + 5"]),
+    ("tekst",    "En eske har n kjeks. Du spiser halvparten. Skriv uttrykket.",                         "n/2",        None),
+    ("flervalg", "Forenkle: 3x + 2(x - 4) + 5",                                                       "5x - 3",     ["5x + 3", "3x - 3", "5x + 13"]),
+    ("tekst",    "Prisen per kg epler er p kr. Du kjøper 2,5 kg. Skriv uttrykket for totalkostnaden.", "2,5p",       None),
+    ("flervalg", "Forenkle: 4(2x + 3) - 3(x + 2)",                                                    "5x + 6",     ["5x - 6", "8x + 6", "5x + 8"]),
+    ("tekst",    "En rektangel har lengde 2x + 1 og bredde x + 3. Skriv uttrykket for arealet.",       "(2x+1)(x+3)", None),
+    ("flervalg", "Forenkle: 2x + 3y - (x - y)",                                                        "x + 4y",     ["x + 2y", "3x + 4y", "x - 2y"]),
+    ("tekst",    "Kari er x år. Søsteren er 3 år eldre. Skriv uttrykket for søsterens alder om 5 år.", "x + 8",      None),
+    ("flervalg", "Forenkle: 5(x + 2) - 2(2x - 1)",                                                    "x + 12",     ["x - 12", "9x + 8", "x + 8"]),
+    ("tekst",    "En bedrift tjener 50x - 200 kr per dag. Skriv uttrykket for ukentlig fortjeneste (5 dager).", "250x - 1000", None),
+    ("flervalg", "Forenkle: 3(a + b) - 2(a - b)",                                                      "a + 5b",     ["a - 5b", "5a + b", "a + b"]),
+    ("tekst",    "Et kvadrat har sidelengde (x + 2). Skriv uttrykket for omkretsen.",                  "4x + 8",     None),
+    ("flervalg", "Forenkle: 6x - 2(3x - 4)",                                                           "8",          ["8x", "0", "-8"]),
+    ("tekst",    "En person sykler x km/t i 2 timer og går 4 km/t i 1 time. Skriv totaldistansen.",    "2x + 4",     None),
+    ("flervalg", "Forenkle: 4(x - 1) + 3(2x + 1)",                                                    "10x - 1",    ["10x + 1", "7x - 1", "10x - 7"]),
+    ("tekst",    "En butikk selger x varer til 45 kr og y varer til 30 kr. Skriv totalinntekten.",     "45x + 30y",  None),
+    ("flervalg", "Forenkle: 2(x + 3y) - (x + y)",                                                     "x + 5y",     ["x - 5y", "3x + 5y", "x + 7y"]),
+    ("tekst",    "Ole tar opp lån på 10 000 kr. Hvert år øker gjelden med 500x kr. Skriv gjelden etter n år.", "10000 + 500xn", None),
+    ("flervalg", "Forenkle: 3x + 4 - (x - 2) + 2x",                                                   "4x + 6",     ["4x - 6", "6x + 6", "4x + 2"]),
+    ("tekst",    "En tank inneholder 200 liter. Det renner ut 5x liter per time. Skriv uttrykket for mengden etter t timer.", "200 - 5xt", None),
+    ("flervalg", "Forenkle: 5(2a - b) - 3(a + 2b)",                                                   "7a - 11b",   ["7a + 11b", "10a - 11b", "7a - 5b"]),
+    ("tekst",    "En trekant har sider x, 2x og x + 5. Skriv uttrykket for omkretsen.",               "4x + 5",     None),
+    ("flervalg", "Forenkle: 4(x + 2y) - 2(2x - y)",                                                   "10y",        ["4x + 10y", "10y + 4x", "0"]),
+    ("tekst",    "En restaurant har faste kostnader på 3000 kr og 40x kr per gjest. Skriv uttrykket for totalkostnaden.", "3000 + 40x", None),
+    ("flervalg", "Forenkle: 6(x - 3) - 2(x - 9)",                                                     "4x",         ["4x - 36", "4x + 36", "8x"]),
+    ("tekst",    "Prisen på en jakke er p kr. Det er 20% rabatt. Skriv den nye prisen som uttrykk.",   "0,8p",       None),
+    ("flervalg", "Forenkle: 3(2x + 1) - (4x - 5)",                                                    "2x + 8",     ["2x - 8", "10x + 8", "2x + 2"]),
+    ("tekst",    "En elev får x poeng på hver oppgave. Det er 12 oppgaver, men hun mister 3 poeng for feil svar. Hun svarer feil på 2. Skriv poengsummen.", "12x - 6", None),
+    ("flervalg", "Forenkle: 4(3x - 2y) - 2(5x - 4y)",                                                 "2x",         ["2x - 8y", "2x + 8y", "2x + 16y"]),
+]
+
+
+@app.route('/oppgaver/Enkle algebraiske uttrykk/nivaa3', methods=['GET', 'POST'])
+@login_required
+def enkle_uttrykk_nivaa3_route():
+    oppgaver = enkle_uttrykk_nivaa3_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 33000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Enkle algebraiske uttrykk – Nivå 3", melding="Du fullførte nivå 3! Monstersterkt 💪🔥")
+
+    type_, oppgave_html, fasit, gale = oppgaver[nummer - 1]
+    alternativer = _fv_tall(fasit, gale) if type_ == "flervalg" else []
+
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        svar = request.form.get("svar_flervalg" if type_ == "flervalg" else "svar", "").strip()
+        if svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        elif svar.lower().replace(" ", "") == fasit.lower().replace(" ", ""):
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        else:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 33000 + i, "link": f"/oppgaver/Enkle algebraiske uttrykk/nivaa3?n={i}"} for i in range(1, total + 1)]
+    return render_template("enkle_uttrykk_nivaa3.html",
+        oppgave_html=f'<p class="task-question-text">{oppgave_html}</p>',
+        type=type_, alternativer=alternativer,
+        nummer=nummer, total=total, resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny, riktige_oppgaver=riktige_oppgaver
+    )
+
+
 # START SERVER
 if __name__ == '__main__':
     app.run(debug=True)
