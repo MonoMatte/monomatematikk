@@ -1,0 +1,26 @@
+{% extends "oppgaver_layout.html" %}
+{% block title %}Enkle algebraiske uttrykk{% endblock %}
+{% block task_content %}
+
+<a href="#" class="close-btn" onclick="goToLastTopic()">✕</a>
+<h1>Enkle algebraiske uttrykk</h1>
+<h3>Velg nivå</h3>
+<div class="level-buttons">
+    <a href="/oppgaver/Enkle algebraiske uttrykk/nivaa1" class="level-btn level-btn-easy">Nivå 1</a>
+    <a href="/oppgaver/Enkle algebraiske uttrykk/nivaa2" class="level-btn level-btn-medium">Nivå 2</a>
+    <a href="/oppgaver/Enkle algebraiske uttrykk/nivaa3" class="level-btn level-btn-hard">Nivå 3</a>
+</div>
+<div class="theory-box mt-4">
+    <h3>Forklaring</h3>
+    <p>Et algebraisk uttrykk er en kombinasjon av tall, variabler og regneoperasjoner. For eksempel: 3x + 2 er et uttrykk der 3 er koeffisienten, x er variabelen og 2 er konstantleddet.</p>
+    <ul>
+        <li><strong>Nivå 1:</strong> Lese og tolke enkle uttrykk</li>
+        <li><strong>Nivå 2:</strong> Forenkle uttrykk ved å samle like ledd</li>
+        <li><strong>Nivå 3:</strong> Sette opp uttrykk fra tekstoppgaver</li>
+    </ul>
+</div>
+
+<script>
+function goToLastTopic() { window.location.href = "/oppgaver/trinn/8"; }
+</script>
+{% endblock %}
