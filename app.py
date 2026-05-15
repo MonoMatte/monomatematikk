@@ -2358,6 +2358,263 @@ def forhold_nivaa3_route():
     )
 
 
+
+# ─────────────────────────────────────────────
+# VARIABLER
+# ─────────────────────────────────────────────
+
+@app.route('/oppgaver/variabler')
+@login_required
+def variabler():
+    return render_template('oppgaver_variabler.html')
+
+
+def _fv_tall(riktig, gale):
+    import random
+    alts = [riktig] + gale
+    random.shuffle(alts)
+    return alts
+
+
+# VARIABLER NIVÅ 1 – hva er en variabel, sette inn enkle verdier (ID 28001–28030)
+variabler_nivaa1_oppgaver = [
+    ("flervalg", "Hva er en variabel?",
+     "Et symbol som representerer et ukjent tall",
+     ["Et fast tall", "Et regnestykke", "Et svar"]),
+    ("skriv",    "Hva er x + 3 når x = 2?",                            "5",    None),
+    ("flervalg", "Hva er y + 5 når y = 4?",                            "9",    ["8", "10", "7"]),
+    ("skriv",    "Hva er a - 2 når a = 7?",                            "5",    None),
+    ("flervalg", "Hva er b + 10 når b = 6?",                           "16",   ["15", "17", "60"]),
+    ("skriv",    "Hva er x + x når x = 3?",                            "6",    None),
+    ("flervalg", "Hva er n - 4 når n = 9?",                            "5",    ["4", "6", "13"]),
+    ("tekst",    "En pose inneholder x epler. Hvis x = 8, hvor mange epler er det?", "8", None),
+    ("skriv",    "Hva er z + 7 når z = 0?",                            "7",    None),
+    ("flervalg", "Hva er m + m + m når m = 2?",                        "6",    ["3", "4", "8"]),
+    ("skriv",    "Hva er x - 1 når x = 10?",                           "9",    None),
+    ("flervalg", "Hva er p + 6 når p = 3?",                            "9",    ["8", "10", "18"]),
+    ("tekst",    "En boks har y blyanter. Hvis y = 12, hvor mange blyanter er det?", "12", None),
+    ("skriv",    "Hva er a + b når a = 3 og b = 4?",                   "7",    None),
+    ("flervalg", "Hva er x + y når x = 5 og y = 2?",                  "7",    ["10", "6", "8"]),
+    ("skriv",    "Hva er n + 0 når n = 15?",                           "15",   None),
+    ("flervalg", "Hva er a - b når a = 10 og b = 3?",                  "7",    ["6", "8", "13"]),
+    ("tekst",    "En bil kjører x km per time. Etter 1 time er x = 60. Hvor langt har den kjørt?", "60", None),
+    ("skriv",    "Hva er x + 4 når x = 11?",                           "15",   None),
+    ("flervalg", "Hva er k - k når k = 99?",                           "0",    ["1", "99", "2"]),
+    ("skriv",    "Hva er a + b + c når a = 1, b = 2 og c = 3?",        "6",    None),
+    ("flervalg", "Hva er t + 8 når t = 7?",                            "15",   ["14", "16", "56"]),
+    ("tekst",    "Ole har x kr. Han får 5 kr til. Uttrykket er x + 5. Hva er svaret når x = 20?", "25", None),
+    ("skriv",    "Hva er x - y når x = 9 og y = 4?",                   "5",    None),
+    ("flervalg", "Hva er p + q når p = 8 og q = 8?",                   "16",   ["8", "64", "0"]),
+    ("tekst",    "En klasse har x elever. x = 28. Hvor mange elever er det?", "28", None),
+    ("skriv",    "Hva er a + 3 når a = 17?",                           "20",   None),
+    ("flervalg", "Hva er n - 0 når n = 42?",                           "42",   ["0", "41", "43"]),
+    ("tekst",    "En eske har x kaker. Kari spiser 2. Uttrykket er x - 2. Hva er svaret når x = 10?", "8", None),
+    ("skriv",    "Hva er x + y + z når x = 2, y = 3 og z = 5?",       "10",   None),
+]
+
+
+@app.route('/oppgaver/Variabler/nivaa1', methods=['GET', 'POST'])
+@login_required
+def variabler_nivaa1_route():
+    oppgaver = variabler_nivaa1_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 28000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Variabler – Nivå 1", melding="Du fullførte nivå 1! Bra jobba 🎉")
+
+    type_, oppgave_html, fasit, gale = oppgaver[nummer - 1]
+    alternativer = _fv_tall(fasit, gale) if type_ == "flervalg" else []
+
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        svar = request.form.get("svar_flervalg" if type_ == "flervalg" else "svar", "").strip()
+        if svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        elif svar.lower() == fasit.lower():
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        else:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 28000 + i, "link": f"/oppgaver/Variabler/nivaa1?n={i}"} for i in range(1, total + 1)]
+    return render_template("variabler_nivaa1.html",
+        oppgave_html=f'<p class="task-question-text">{oppgave_html}</p>',
+        type=type_, alternativer=alternativer,
+        nummer=nummer, total=total, resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny, riktige_oppgaver=riktige_oppgaver
+    )
+
+
+# VARIABLER NIVÅ 2 – koeffisienter og uttrykk (ID 29001–29030)
+variabler_nivaa2_oppgaver = [
+    ("skriv",    "Hva er 2x når x = 4?",                               "8",    None),
+    ("flervalg", "Hva er 3x når x = 5?",                               "15",   ["8", "53", "20"]),
+    ("skriv",    "Hva er 4y når y = 3?",                               "12",   None),
+    ("flervalg", "Hva er 5n når n = 6?",                               "30",   ["11", "25", "56"]),
+    ("skriv",    "Hva er 2x + 3 når x = 4?",                           "11",   None),
+    ("flervalg", "Hva er 3a - 2 når a = 4?",                           "10",   ["9", "11", "14"]),
+    ("skriv",    "Hva er x² når x = 3?",                               "9",    None),
+    ("flervalg", "Hva er 2x + y når x = 3 og y = 4?",                  "10",   ["9", "11", "14"]),
+    ("tekst",    "En taxi koster 2x kr per km. Hva koster en tur på 5 km? (x = 1, så det er 2·5)", "10", None),
+    ("skriv",    "Hva er 6n - 4 når n = 2?",                           "8",    None),
+    ("flervalg", "Hva er 4x + 2x når x = 3?",                          "18",   ["12", "14", "24"]),
+    ("skriv",    "Hva er 3a + 2b når a = 2 og b = 3?",                 "12",   None),
+    ("flervalg", "Hva er 5y - 3y når y = 4?",                          "8",    ["2", "20", "12"]),
+    ("tekst",    "En pakke koster 3x kr. Du kjøper 4 pakker. Hva er totalkostnaden når x = 5?", "60", None),
+    ("skriv",    "Hva er 2x² når x = 3?",                              "18",   None),
+    ("flervalg", "Hva er 10 - 2x når x = 3?",                          "4",    ["6", "7", "8"]),
+    ("skriv",    "Hva er 4x - 2y når x = 5 og y = 4?",                 "12",   None),
+    ("flervalg", "Hva er 3(x + 2) når x = 4?",                         "18",   ["14", "12", "9"]),
+    ("tekst",    "En person tjener 50x kr per time og jobber 8 timer. Hva tjener personen når x = 1?", "400", None),
+    ("skriv",    "Hva er 2(x + y) når x = 3 og y = 2?",               "10",   None),
+    ("flervalg", "Hva er 7n + 3 når n = 3?",                           "24",   ["21", "33", "22"]),
+    ("skriv",    "Hva er 5x - 3x + 2 når x = 4?",                     "10",   None),
+    ("flervalg", "Hva er 4(2x - 1) når x = 2?",                        "12",   ["14", "16", "8"]),
+    ("tekst",    "En rektangel har lengde 3x og bredde 2. Hva er arealet når x = 4?", "24", None),
+    ("skriv",    "Hva er 9 - 3x når x = 2?",                           "3",    None),
+    ("flervalg", "Hva er 2x + 3y når x = 5 og y = 2?",                 "16",   ["17", "20", "12"]),
+    ("tekst",    "En bil kjører med fart v. Etter t timer har den kjørt v·t km. Hva er distansen når v = 80 og t = 3?", "240", None),
+    ("skriv",    "Hva er 3x + 4x - 2 når x = 2?",                     "12",   None),
+    ("flervalg", "Hva er 6(x - 2) når x = 5?",                         "18",   ["24", "12", "6"]),
+    ("tekst",    "Prisen per eple er x kr. Du kjøper 6 epler og betaler med 50 kr. Restpengene er 50 - 6x. Hva er svaret når x = 7?", "8", None),
+]
+
+
+@app.route('/oppgaver/Variabler/nivaa2', methods=['GET', 'POST'])
+@login_required
+def variabler_nivaa2_route():
+    oppgaver = variabler_nivaa2_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 29000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Variabler – Nivå 2", melding="Du fullførte nivå 2! Sterkt jobba 🔥")
+
+    type_, oppgave_html, fasit, gale = oppgaver[nummer - 1]
+    alternativer = _fv_tall(fasit, gale) if type_ == "flervalg" else []
+
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        svar = request.form.get("svar_flervalg" if type_ == "flervalg" else "svar", "").strip()
+        if svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        elif svar.lower() == fasit.lower():
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        else:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 29000 + i, "link": f"/oppgaver/Variabler/nivaa2?n={i}"} for i in range(1, total + 1)]
+    return render_template("variabler_nivaa2.html",
+        oppgave_html=f'<p class="task-question-text">{oppgave_html}</p>',
+        type=type_, alternativer=alternativer,
+        nummer=nummer, total=total, resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny, riktige_oppgaver=riktige_oppgaver
+    )
+
+
+# VARIABLER NIVÅ 3 – sammensatte uttrykk og tekstoppgaver (ID 30001–30030)
+variabler_nivaa3_oppgaver = [
+    ("skriv",    "Hva er 3x² + 2x når x = 2?",                        "16",   None),
+    ("flervalg", "Hva er 2x² - 3x + 1 når x = 3?",                    "10",   ["16", "12", "8"]),
+    ("tekst",    "Arealet av et kvadrat er x². Hva er arealet når x = 7?", "49", None),
+    ("skriv",    "Hva er (x + y)² når x = 2 og y = 3?",               "25",   None),
+    ("flervalg", "Hva er 4x² - x når x = 3?",                         "33",   ["39", "27", "30"]),
+    ("tekst",    "En ball kastes opp med fart v. Høyden etter t sekunder er v·t - 5t². Hva er høyden når v = 20 og t = 2?", "20", None),
+    ("skriv",    "Hva er 5(x + 3) - 2x når x = 4?",                   "23",   None),
+    ("flervalg", "Hva er x(x + 1) når x = 5?",                        "30",   ["25", "35", "20"]),
+    ("tekst",    "En rektangel har lengde (2x + 3) og bredde x. Hva er arealet når x = 4?", "44", None),
+    ("skriv",    "Hva er 2(3x - 1) + x når x = 3?",                   "19",   None),
+    ("flervalg", "Hva er (x + 2)(x - 2) når x = 5?",                  "21",   ["9", "25", "16"]),
+    ("tekst",    "Prisen er 3x² + 2x kr. Hva er prisen når x = 4?",   "56",   None),
+    ("skriv",    "Hva er 4x - 3y + 2z når x = 5, y = 2 og z = 3?",   "22",   None),
+    ("flervalg", "Hva er x³ + x² når x = 2?",                         "12",   ["10", "8", "16"]),
+    ("tekst",    "Vann i en tank: V = 100 - 3t liter. Hvor mye vann er det etter t = 15 minutter?", "55", None),
+    ("skriv",    "Hva er 3x² - 2x - 1 når x = 4?",                    "39",   None),
+    ("flervalg", "Hva er 2(x + y)(x - y) når x = 5 og y = 3?",        "32",   ["16", "64", "48"]),
+    ("tekst",    "En bedrift tjener 200x - 500 kr per dag. Hva tjener de når x = 8?", "1100", None),
+    ("skriv",    "Hva er x² + 2xy + y² når x = 3 og y = 2?",         "25",   None),
+    ("flervalg", "Hva er 5x² - 4x + 3 når x = 2?",                    "15",   ["19", "11", "23"]),
+    ("tekst",    "Temperaturen ute er t grader. Inne er det (2t + 5) grader. Hva er innetemperaturen når t = 8?", "21", None),
+    ("skriv",    "Hva er (2x)² - x når x = 3?",                       "33",   None),
+    ("flervalg", "Hva er 3x(x - 2) når x = 4?",                       "24",   ["12", "36", "48"]),
+    ("tekst",    "Et svømmebasseng fylles med 5x liter per minutt. Etter t minutter er det 5xt liter. Hva er mengden når x = 3 og t = 10?", "150", None),
+    ("skriv",    "Hva er 6x² - 2(x + 1) når x = 3?",                  "46",   None),
+    ("flervalg", "Hva er x² + y² når x = 3 og y = 4?",                "25",   ["49", "14", "12"]),
+    ("tekst",    "En bil starter med 60 liter drivstoff og bruker 0,1x liter per km. Hvor mye er igjen etter 200 km når x = 1?", "40", None),
+    ("skriv",    "Hva er 2x³ - x² når x = 2?",                        "12",   None),
+    ("flervalg", "Hva er (x + 1)² - (x - 1)² når x = 5?",             "20",   ["10", "24", "16"]),
+    ("tekst",    "Fortjeneste = pris · antall - kostnad = 3x · 10 - 50. Hva er fortjenesten når x = 8?", "190", None),
+]
+
+
+@app.route('/oppgaver/Variabler/nivaa3', methods=['GET', 'POST'])
+@login_required
+def variabler_nivaa3_route():
+    oppgaver = variabler_nivaa3_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 30000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Variabler – Nivå 3", melding="Du fullførte nivå 3! Monstersterkt 💪🔥")
+
+    type_, oppgave_html, fasit, gale = oppgaver[nummer - 1]
+    alternativer = _fv_tall(fasit, gale) if type_ == "flervalg" else []
+
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        svar = request.form.get("svar_flervalg" if type_ == "flervalg" else "svar", "").strip()
+        if svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        elif svar.lower() == fasit.lower():
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        else:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 30000 + i, "link": f"/oppgaver/Variabler/nivaa3?n={i}"} for i in range(1, total + 1)]
+    return render_template("variabler_nivaa3.html",
+        oppgave_html=f'<p class="task-question-text">{oppgave_html}</p>',
+        type=type_, alternativer=alternativer,
+        nummer=nummer, total=total, resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny, riktige_oppgaver=riktige_oppgaver
+    )
+
+
 # START SERVER
 if __name__ == '__main__':
     app.run(debug=True)
