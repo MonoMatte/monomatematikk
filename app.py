@@ -2863,6 +2863,504 @@ def enkle_uttrykk_nivaa3_route():
     )
 
 
+
+# ─────────────────────────────────────────────
+# REGNING MED UTTRYKK
+# ─────────────────────────────────────────────
+
+@app.route('/oppgaver/regning_uttrykk')
+@login_required
+def regning_uttrykk():
+    return render_template('oppgaver_regning_uttrykk.html')
+
+
+# NIVÅ 1 – addisjon og subtraksjon av uttrykk (ID 34001–34030)
+regning_uttrykk_nivaa1_oppgaver = [
+    ("skriv",    "Legg sammen: (2x + 3) + (4x + 1)",                           "6x + 4",    None),
+    ("flervalg", "Legg sammen: (3x + 5) + (2x + 2)",                           "5x + 7",    ["5x + 3", "6x + 7", "5x + 10"]),
+    ("skriv",    "Trekk fra: (5x + 4) - (2x + 1)",                             "3x + 3",    None),
+    ("flervalg", "Trekk fra: (6x + 3) - (3x + 3)",                             "3x",        ["3x + 6", "9x", "3x - 6"]),
+    ("skriv",    "Legg sammen: (x + 4) + (3x - 2)",                            "4x + 2",    None),
+    ("flervalg", "Trekk fra: (8x + 5) - (3x - 2)",                             "5x + 7",    ["5x + 3", "5x - 7", "11x + 7"]),
+    ("tekst",    "En rektangel har lengder (3x + 2) og (x + 4). Hva er summen av de to lengdene?", "4x + 6", None),
+    ("flervalg", "Legg sammen: (2a + 3b) + (4a - b)",                          "6a + 2b",   ["6a - 2b", "2a + 2b", "6ab"]),
+    ("skriv",    "Trekk fra: (7x - 3) - (2x - 5)",                             "5x + 2",    None),
+    ("flervalg", "Legg sammen: (5x - 2) + (3x + 8)",                           "8x + 6",    ["8x - 6", "2x + 6", "8x + 10"]),
+    ("tekst",    "Ole har (4x + 3) kr og Kari har (2x - 1) kr. Hvor mye har de til sammen?", "6x + 2", None),
+    ("skriv",    "Legg sammen: (3x + y) + (x - 3y)",                           "4x - 2y",   None),
+    ("flervalg", "Trekk fra: (9x + 4) - (4x + 4)",                             "5x",        ["5x + 8", "13x", "5x - 8"]),
+    ("skriv",    "Legg sammen: (2x + 5) + (2x + 5)",                           "4x + 10",   None),
+    ("flervalg", "Trekk fra: (6a - 2b) - (3a - 5b)",                           "3a + 3b",   ["3a - 3b", "9a - 7b", "3a - 7b"]),
+    ("tekst",    "En boks inneholder (5n + 2) kuler. En annen inneholder (3n - 2) kuler. Hvor mange er det totalt?", "8n", None),
+    ("skriv",    "Trekk fra: (10x + 3) - (4x - 1)",                            "6x + 4",    None),
+    ("flervalg", "Legg sammen: (4x - 3) + (x + 7)",                            "5x + 4",    ["5x - 4", "4x + 4", "5x + 10"]),
+    ("skriv",    "Legg sammen: (3a + 2b + 1) + (a - b + 3)",                   "4a + b + 4", None),
+    ("flervalg", "Trekk fra: (5x + 2y) - (2x + y)",                            "3x + y",    ["3x - y", "7x + 3y", "3xy"]),
+    ("tekst",    "Temperaturen stiger (2t + 1) grader og synker (t - 3) grader. Hva er netto endring?", "t + 4", None),
+    ("skriv",    "Legg sammen: (7x - 4) + (-3x + 6)",                          "4x + 2",    None),
+    ("flervalg", "Trekk fra: (8m + 3n) - (5m - 2n)",                           "3m + 5n",   ["3m - 5n", "3m + n", "13m + 5n"]),
+    ("skriv",    "Trekk fra: (4x + 3y - 2) - (x + y - 5)",                    "3x + 2y + 3", None),
+    ("flervalg", "Legg sammen: (6x - 1) + (2x + 1)",                           "8x",        ["8x - 2", "8x + 2", "4x"]),
+    ("tekst",    "En trekant har sider (2x + 3), (x + 1) og (3x - 2). Hva er omkretsen?", "6x + 2", None),
+    ("skriv",    "Trekk fra: (5x + 2y + 3) - (3x - y + 1)",                   "2x + 3y + 2", None),
+    ("flervalg", "Legg sammen: (4a - 3) + (2a + 3) + (a - 1)",                "7a - 1",    ["7a + 1", "6a - 1", "7a"]),
+    ("tekst",    "En butikk hadde (8x + 5) varer og solgte (3x + 2). Hvor mange er igjen?", "5x + 3", None),
+    ("skriv",    "Legg sammen: (x + 2y - 3) + (3x - y + 5)",                  "4x + y + 2", None),
+]
+
+
+@app.route('/oppgaver/Regning med uttrykk/nivaa1', methods=['GET', 'POST'])
+@login_required
+def regning_uttrykk_nivaa1_route():
+    oppgaver = regning_uttrykk_nivaa1_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 34000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Regning med uttrykk – Nivå 1", melding="Du fullførte nivå 1! Bra jobba 🎉")
+
+    type_, oppgave_html, fasit, gale = oppgaver[nummer - 1]
+    alternativer = _fv_tall(fasit, gale) if type_ == "flervalg" else []
+
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        svar = request.form.get("svar_flervalg" if type_ == "flervalg" else "svar", "").strip()
+        if svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        elif svar.lower().replace(" ", "") == fasit.lower().replace(" ", ""):
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        else:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 34000 + i, "link": f"/oppgaver/Regning med uttrykk/nivaa1?n={i}"} for i in range(1, total + 1)]
+    return render_template("regning_uttrykk_nivaa1.html",
+        oppgave_html=f'<p class="task-question-text">{oppgave_html}</p>',
+        type=type_, alternativer=alternativer,
+        nummer=nummer, total=total, resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny, riktige_oppgaver=riktige_oppgaver
+    )
+
+
+# NIVÅ 2 – multiplikasjon og distribusjon (ID 35001–35030)
+regning_uttrykk_nivaa2_oppgaver = [
+    ("skriv",    "Gang ut: 3(x + 4)",                                           "3x + 12",   None),
+    ("flervalg", "Gang ut: 5(2x - 3)",                                          "10x - 15",  ["10x + 15", "7x - 3", "5x - 15"]),
+    ("skriv",    "Gang ut: 2(3x + y)",                                          "6x + 2y",   None),
+    ("flervalg", "Gang ut: 4(x - 2y + 1)",                                      "4x - 8y + 4", ["4x - 2y + 1", "4x + 8y + 4", "4x - 8y - 4"]),
+    ("skriv",    "Gang ut og forenkle: 2(x + 3) + 3(x + 1)",                   "5x + 9",    None),
+    ("flervalg", "Gang ut og forenkle: 4(x + 2) - 2(x - 1)",                   "2x + 10",   ["2x - 10", "6x + 6", "2x + 6"]),
+    ("tekst",    "En rektangel har lengde (x + 3) og bredde 4. Skriv arealet som et forenklet uttrykk.", "4x + 12", None),
+    ("flervalg", "Gang ut: -2(3x - 4)",                                         "-6x + 8",   ["-6x - 8", "6x - 8", "-6x + 4"]),
+    ("skriv",    "Gang ut og forenkle: 3(2x + 1) - (x + 3)",                   "5x",        None),
+    ("flervalg", "Gang ut og forenkle: 5(x - 2) + 2(x + 5)",                   "7x",        ["7x - 10", "3x", "7x + 10"]),
+    ("tekst",    "Et kvadrat har sidelengde (2x + 1). Skriv arealet som uttrykk. (Hint: side · side)", "(2x+1)²", None),
+    ("skriv",    "Gang ut og forenkle: 2(x + y) + 3(x - y)",                   "5x - y",    None),
+    ("flervalg", "Gang ut og forenkle: 6(x + 1) - 3(x + 2)",                   "3x",        ["3x + 6", "9x - 6", "3x - 6"]),
+    ("skriv",    "Gang ut: x(x + 3)",                                           "x² + 3x",   None),
+    ("flervalg", "Gang ut: x(2x - 5)",                                          "2x² - 5x",  ["2x² + 5x", "x² - 5x", "2x - 5"]),
+    ("tekst",    "En boks koster (3x + 2) kr. Du kjøper 4 bokser. Skriv totalkostnaden.", "12x + 8", None),
+    ("skriv",    "Gang ut og forenkle: 4(3x - 1) - 2(5x - 3)",                 "2x + 2",    None),
+    ("flervalg", "Gang ut: 2x(x + 4)",                                          "2x² + 8x",  ["2x + 8x", "2x² + 4", "2x² - 8x"]),
+    ("tekst",    "En person jobber (x + 2) timer per dag i 5 dager. Skriv totale arbeidstimer.", "5x + 10", None),
+    ("skriv",    "Gang ut og forenkle: 3(x + 2y) - 2(2x - y)",                 "-x + 8y",   None),
+    ("flervalg", "Gang ut: -3(2x + 5)",                                         "-6x - 15",  ["-6x + 15", "6x + 15", "-6x - 5"]),
+    ("skriv",    "Gang ut og forenkle: x(x + 2) + x(x - 2)",                   "2x²",       None),
+    ("flervalg", "Gang ut og forenkle: 2(x + 3) + 4(x - 1) - x",              "5x + 2",    ["5x - 2", "7x + 2", "5x + 10"]),
+    ("tekst",    "En bil kjører (v + 10) km/t i 3 timer. Skriv distansen som uttrykk.", "3v + 30", None),
+    ("skriv",    "Gang ut og forenkle: 5(2x + 3) - 3(3x + 5)",                 "x",         None),
+    ("flervalg", "Gang ut: 3x(2x - 1) + x",                                    "6x² - 2x",  ["6x² + 2x", "6x² - x", "6x - 2x"]),
+    ("tekst",    "En rektangel har lengde (3x - 1) og bredde (x + 2). Skriv omkretsen.", "8x + 2", None),
+    ("skriv",    "Gang ut og forenkle: 4(x - 2) - 3(x - 4) + 2x",             "3x + 4",    None),
+    ("flervalg", "Gang ut og forenkle: 2(3x + 1) + 3(x - 2) - x",             "8x - 4",    ["8x + 4", "6x - 4", "8x"]),
+    ("tekst",    "En butikk selger x varer til 25 kr og (x + 3) varer til 15 kr. Skriv totalinntekten.", "40x + 45", None),
+]
+
+
+@app.route('/oppgaver/Regning med uttrykk/nivaa2', methods=['GET', 'POST'])
+@login_required
+def regning_uttrykk_nivaa2_route():
+    oppgaver = regning_uttrykk_nivaa2_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 35000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Regning med uttrykk – Nivå 2", melding="Du fullførte nivå 2! Sterkt jobba 🔥")
+
+    type_, oppgave_html, fasit, gale = oppgaver[nummer - 1]
+    alternativer = _fv_tall(fasit, gale) if type_ == "flervalg" else []
+
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        svar = request.form.get("svar_flervalg" if type_ == "flervalg" else "svar", "").strip()
+        if svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        elif svar.lower().replace(" ", "") == fasit.lower().replace(" ", ""):
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        else:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 35000 + i, "link": f"/oppgaver/Regning med uttrykk/nivaa2?n={i}"} for i in range(1, total + 1)]
+    return render_template("regning_uttrykk_nivaa2.html",
+        oppgave_html=f'<p class="task-question-text">{oppgave_html}</p>',
+        type=type_, alternativer=alternativer,
+        nummer=nummer, total=total, resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny, riktige_oppgaver=riktige_oppgaver
+    )
+
+
+# NIVÅ 3 – sammensatte uttrykk og tekstoppgaver (ID 36001–36030)
+regning_uttrykk_nivaa3_oppgaver = [
+    ("skriv",    "Gang ut og forenkle: (x + 2)(x + 3)",                         "x² + 5x + 6",   None),
+    ("flervalg", "Gang ut og forenkle: (x + 4)(x + 1)",                         "x² + 5x + 4",   ["x² + 4x + 4", "x² + 5x + 5", "x² + 4"]),
+    ("skriv",    "Gang ut og forenkle: (x + 3)(x - 3)",                         "x² - 9",         None),
+    ("flervalg", "Gang ut og forenkle: (x + 5)(x - 2)",                         "x² + 3x - 10",  ["x² - 3x - 10", "x² + 5x - 10", "x² + 3x + 10"]),
+    ("tekst",    "Et rom har lengde (x + 4) og bredde (x + 2). Skriv arealet som et forenklet uttrykk.", "x² + 6x + 8", None),
+    ("skriv",    "Gang ut og forenkle: (2x + 1)(x + 3)",                        "2x² + 7x + 3",   None),
+    ("flervalg", "Gang ut og forenkle: (x - 2)²",                               "x² - 4x + 4",   ["x² + 4x + 4", "x² - 4", "x² + 4"]),
+    ("skriv",    "Gang ut og forenkle: (3x + 2)(x - 1)",                        "3x² - x - 2",    None),
+    ("flervalg", "Gang ut og forenkle: (x + 1)²",                               "x² + 2x + 1",   ["x² + 1", "x² - 2x + 1", "2x + 1"]),
+    ("tekst",    "En hage er (x + 5) meter lang og (x - 1) meter bred. Skriv arealet.", "x² + 4x - 5", None),
+    ("skriv",    "Forenkle: 3(x + 2)² - 2x",                                    "3x² + 10x + 12", None),
+    ("flervalg", "Gang ut og forenkle: (2x - 3)(2x + 3)",                       "4x² - 9",        ["4x² + 9", "4x² - 6x - 9", "4x² + 6x - 9"]),
+    ("tekst",    "En bedrift selger (x + 10) enheter til (x - 5) kr per enhet. Skriv inntekten.", "x² + 5x - 50", None),
+    ("skriv",    "Gang ut og forenkle: (x + 4)(x + 4)",                         "x² + 8x + 16",   None),
+    ("flervalg", "Gang ut og forenkle: (3x + 1)(x - 4)",                        "3x² - 11x - 4",  ["3x² + 11x - 4", "3x² - 4x - 4", "3x² - 11x + 4"]),
+    ("tekst",    "En rektangel har sider (2x + 3) og (x + 1). Skriv arealet og omkretsen.", "Areal: 2x²+5x+3, Omk: 6x+8", None),
+    ("skriv",    "Forenkle: (x + 3)(x - 1) - x(x + 2)",                        "2x - 3",          None),
+    ("flervalg", "Gang ut og forenkle: 2(x + 1)² - (x + 2)²",                  "x²",              ["x² + 2", "x² - 2", "2x²"]),
+    ("tekst",    "En kvadrat har sidelengde (x + 3). Finn arealet og omkretsen.", "Areal: x²+6x+9, Omk: 4x+12", None),
+    ("skriv",    "Gang ut og forenkle: (x - 5)(x + 5) + 10x",                   "x² + 10x - 25",  None),
+    ("flervalg", "Gang ut og forenkle: (4x - 1)(x + 2)",                        "4x² + 7x - 2",   ["4x² - 7x - 2", "4x² + 7x + 2", "4x² - x - 2"]),
+    ("tekst",    "Fortjeneste = (antall · pris) - kostnad = (x + 5)(2x - 3) - 10. Forenkle uttrykket.", "2x² + 7x - 25", None),
+    ("skriv",    "Forenkle: (x + 2)² - (x - 2)²",                              "8x",              None),
+    ("flervalg", "Gang ut og forenkle: 3(x + 1)(x - 1)",                        "3x² - 3",         ["3x² + 3", "3x² - 1", "3x²"]),
+    ("tekst",    "Et rektangulært basseng er (3x - 2) meter langt og (x + 4) meter bredt. Finn arealet.", "3x² + 10x - 8", None),
+    ("skriv",    "Gang ut og forenkle: (2x + 3)² - 4x²",                        "12x + 9",         None),
+    ("flervalg", "Forenkle: (x + 4)(x - 2) + (x - 1)(x + 3)",                  "2x² + 4x - 11",   ["2x² + 4x + 11", "x² + 4x - 11", "2x² - 11"]),
+    ("tekst",    "En trekant har grunnlinje (2x + 1) og høyde (x + 3). Skriv arealet (½ · g · h).", "x² + 3,5x + 1,5", None),
+    ("skriv",    "Forenkle: (x + 1)(x + 2)(x + 3) — gang ut de to første først",  "x³ + 6x² + 11x + 6", None),
+    ("flervalg", "Gang ut og forenkle: (5x - 2)(2x + 3)",                       "10x² + 11x - 6",  ["10x² - 11x - 6", "10x² + 11x + 6", "10x² - x - 6"]),
+]
+
+
+@app.route('/oppgaver/Regning med uttrykk/nivaa3', methods=['GET', 'POST'])
+@login_required
+def regning_uttrykk_nivaa3_route():
+    oppgaver = regning_uttrykk_nivaa3_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 36000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Regning med uttrykk – Nivå 3", melding="Du fullførte nivå 3! Monstersterkt 💪🔥")
+
+    type_, oppgave_html, fasit, gale = oppgaver[nummer - 1]
+    alternativer = _fv_tall(fasit, gale) if type_ == "flervalg" else []
+
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        svar = request.form.get("svar_flervalg" if type_ == "flervalg" else "svar", "").strip()
+        if svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        elif svar.lower().replace(" ", "") == fasit.lower().replace(" ", ""):
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        else:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 36000 + i, "link": f"/oppgaver/Regning med uttrykk/nivaa3?n={i}"} for i in range(1, total + 1)]
+    return render_template("regning_uttrykk_nivaa3.html",
+        oppgave_html=f'<p class="task-question-text">{oppgave_html}</p>',
+        type=type_, alternativer=alternativer,
+        nummer=nummer, total=total, resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny, riktige_oppgaver=riktige_oppgaver
+    )
+
+
+
+# ─────────────────────────────────────────────
+# LIKNINGER
+# ─────────────────────────────────────────────
+
+@app.route('/oppgaver/likninger2')
+@login_required
+def likninger2():
+    return render_template('oppgaver_likninger2.html')
+
+
+# NIVÅ 1 – enkle likninger, én operasjon (ID 37001–37030)
+likninger_nivaa1_oppgaver = [
+    ("skriv",    "Løs likningen: x + 5 = 12",                                          "7",    None),
+    ("flervalg", "Løs likningen: x + 8 = 15",                                          "7",    ["8", "23", "6"]),
+    ("skriv",    "Løs likningen: x - 3 = 9",                                           "12",   None),
+    ("flervalg", "Løs likningen: x - 7 = 4",                                           "11",   ["3", "13", "-3"]),
+    ("skriv",    "Løs likningen: 2x = 10",                                              "5",    None),
+    ("flervalg", "Løs likningen: 3x = 21",                                              "7",    ["6", "63", "18"]),
+    ("skriv",    "Løs likningen: x : 4 = 3",                                           "12",   None),
+    ("flervalg", "Løs likningen: x : 5 = 6",                                           "30",   ["1", "11", "25"]),
+    ("tekst",    "🎮 Du har x liv i et spill. Etter å ha tapt 4 liv har du 3 igjen. Hvor mange liv hadde du?", "7", None),
+    ("flervalg", "Løs likningen: 4x = 36",                                              "9",    ["8", "32", "40"]),
+    ("skriv",    "Løs likningen: x + 14 = 20",                                         "6",    None),
+    ("flervalg", "Løs likningen: x - 9 = 6",                                           "15",   ["3", "-3", "54"]),
+    ("tekst",    "🍕 En pizza er delt i x skiver. Du spiser 3 og det er 5 igjen. Hvor mange skiver var det?", "8", None),
+    ("skriv",    "Løs likningen: 5x = 45",                                              "9",    None),
+    ("flervalg", "Løs likningen: x + 25 = 40",                                         "15",   ["65", "16", "14"]),
+    ("tekst",    "🐶 Du mater hunden x ganger om dagen. På en uke mater du den 21 ganger. Løs: 7x = 21", "3", None),
+    ("skriv",    "Løs likningen: x - 15 = 7",                                          "22",   None),
+    ("flervalg", "Løs likningen: 6x = 54",                                              "9",    ["48", "10", "8"]),
+    ("skriv",    "Løs likningen: x : 3 = 8",                                           "24",   None),
+    ("flervalg", "Løs likningen: x + 33 = 50",                                         "17",   ["83", "16", "18"]),
+    ("tekst",    "🚀 En rakett har x drivstofftanker. Hver tank veier 200 kg. Total vekt er 1000 kg. Løs: 200x = 1000", "5", None),
+    ("skriv",    "Løs likningen: 8x = 64",                                              "8",    None),
+    ("flervalg", "Løs likningen: x - 18 = 12",                                         "30",   ["6", "-6", "216"]),
+    ("tekst",    "🎵 Du har x sanger på spillelisten. Du sletter 7 og har 13 igjen. Løs likningen.", "20", None),
+    ("skriv",    "Løs likningen: x : 6 = 5",                                           "30",   None),
+    ("flervalg", "Løs likningen: 9x = 72",                                              "8",    ["63", "9", "7"]),
+    ("tekst",    "⚽ Et lag scorer x mål per kamp. Etter 5 kamper har de 20 mål totalt. Løs: 5x = 20", "4", None),
+    ("skriv",    "Løs likningen: x + 47 = 60",                                         "13",   None),
+    ("flervalg", "Løs likningen: x - 23 = 8",                                          "31",   ["15", "-15", "184"]),
+    ("tekst",    "🍦 En iskrem koster x kr. Du kjøper 3 og betaler 45 kr. Løs: 3x = 45", "15", None),
+]
+
+
+@app.route('/oppgaver/Likninger/nivaa1', methods=['GET', 'POST'])
+@login_required
+def likninger_nivaa1_route():
+    oppgaver = likninger_nivaa1_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 37000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Likninger – Nivå 1", melding="Du fullførte nivå 1! Bra jobba 🎉")
+
+    type_, oppgave_html, fasit, gale = oppgaver[nummer - 1]
+    alternativer = _fv_tall(fasit, gale) if type_ == "flervalg" else []
+
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        svar = request.form.get("svar_flervalg" if type_ == "flervalg" else "svar", "").strip()
+        if svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        elif svar == fasit:
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        else:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 37000 + i, "link": f"/oppgaver/Likninger/nivaa1?n={i}"} for i in range(1, total + 1)]
+    return render_template("likninger_nivaa1.html",
+        oppgave_html=f'<p class="task-question-text">{oppgave_html}</p>',
+        type=type_, alternativer=alternativer,
+        nummer=nummer, total=total, resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny, riktige_oppgaver=riktige_oppgaver
+    )
+
+
+# NIVÅ 2 – likninger med parenteser og x på begge sider (ID 38001–38030)
+likninger_nivaa2_oppgaver = [
+    ("skriv",    "Løs likningen: 2x + 3 = 11",                                         "4",    None),
+    ("flervalg", "Løs likningen: 3x - 5 = 16",                                         "7",    ["11", "3", "4"]),
+    ("skriv",    "Løs likningen: 4x + 2 = 18",                                         "4",    None),
+    ("flervalg", "Løs likningen: 5x - 3 = 22",                                         "5",    ["4", "6", "19"]),
+    ("skriv",    "Løs likningen: 2x + 7 = 3x + 1",                                    "6",    None),
+    ("flervalg", "Løs likningen: 4x + 3 = 2x + 11",                                   "4",    ["2", "7", "8"]),
+    ("tekst",    "🎮 Du og kompisen din har begge x poeng. Du får 5 poeng til og han får 3 poeng til. Nå har dere like mange? Nei det er feil! Løs: x + 5 = x + 3. Hva skjer?", "ingen løsning", None),
+    ("flervalg", "Løs likningen: 3(x + 2) = 15",                                       "3",    ["5", "7", "4"]),
+    ("skriv",    "Løs likningen: 2(x - 3) = 8",                                       "7",    None),
+    ("flervalg", "Løs likningen: 5(x + 1) = 30",                                       "5",    ["6", "25", "4"]),
+    ("tekst",    "🐱 En katt veier x kg. En hund veier 3 ganger så mye pluss 2 kg = 14 kg. Løs: 3x + 2 = 14", "4", None),
+    ("skriv",    "Løs likningen: 3x + 4 = x + 10",                                    "3",    None),
+    ("flervalg", "Løs likningen: 6x - 2 = 4x + 8",                                    "5",    ["3", "10", "2"]),
+    ("tekst",    "🏃 Lena løper x km/t og Ole løper (x + 2) km/t. Etter 3 timer er Ole 6 km foran. Løs: 3(x+2) - 3x = 6. Hva er x?", "Alle x fungerer — differansen er alltid 6", None),
+    ("skriv",    "Løs likningen: 4(x + 3) = 2(x + 9)",                                "3",    None),
+    ("flervalg", "Løs likningen: 7x - 5 = 5x + 9",                                    "7",    ["2", "14", "4"]),
+    ("tekst",    "🍔 En burger koster (2x + 5) kr og brus koster (x + 3) kr. Totalt 26 kr. Løs: (2x+5) + (x+3) = 26", "6", None),
+    ("skriv",    "Løs likningen: 3(2x - 1) = 15",                                     "3",    None),
+    ("flervalg", "Løs likningen: 2(3x + 4) = 32",                                     "4",    ["8", "20", "6"]),
+    ("tekst",    "💰 Du og søsteren din sparer penger. Du har (3x + 10) kr og hun har (5x - 6) kr. Dere har like mye. Løs likningen.", "8", None),
+    ("skriv",    "Løs likningen: 5x - 8 = 2x + 7",                                    "5",    None),
+    ("flervalg", "Løs likningen: 4(x - 2) = 2(x + 3)",                                "7",    ["5", "1", "9"]),
+    ("tekst",    "🚗 En bil kjører x km/t. En sykkel kjører (x - 50) km/t. Bilen er dobbelt så rask. Løs: x = 2(x - 50)", "100", None),
+    ("skriv",    "Løs likningen: 6(x + 1) = 4(x + 4)",                                "5",    None),
+    ("flervalg", "Løs likningen: 3x + 12 = 5x - 4",                                   "8",    ["4", "2", "16"]),
+    ("tekst",    "🎂 En kake deles mellom x venner. Hver får 3 biter. Det er 24 biter totalt. Løs: 3x = 24", "8", None),
+    ("skriv",    "Løs likningen: 2(x + 5) = 3(x - 1)",                                "13",   None),
+    ("flervalg", "Løs likningen: 8x - 3 = 6x + 7",                                    "5",    ["10", "2", "4"]),
+    ("tekst",    "🏀 Et basketlag scorer 2x poeng i første omgang og (x + 15) i andre. Totalt 60 poeng. Løs likningen.", "15", None),
+    ("skriv",    "Løs likningen: 4(2x - 3) = 3(x + 2)",                               "18",    None),
+]
+
+
+@app.route('/oppgaver/Likninger/nivaa2', methods=['GET', 'POST'])
+@login_required
+def likninger_nivaa2_route():
+    oppgaver = likninger_nivaa2_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 38000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Likninger – Nivå 2", melding="Du fullførte nivå 2! Sterkt jobba 🔥")
+
+    type_, oppgave_html, fasit, gale = oppgaver[nummer - 1]
+    alternativer = _fv_tall(fasit, gale) if type_ == "flervalg" else []
+
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        svar = request.form.get("svar_flervalg" if type_ == "flervalg" else "svar", "").strip().lower()
+        fasit_norm = fasit.lower()
+        if svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        elif svar == fasit_norm:
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        else:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 38000 + i, "link": f"/oppgaver/Likninger/nivaa2?n={i}"} for i in range(1, total + 1)]
+    return render_template("likninger_nivaa2.html",
+        oppgave_html=f'<p class="task-question-text">{oppgave_html}</p>',
+        type=type_, alternativer=alternativer,
+        nummer=nummer, total=total, resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny, riktige_oppgaver=riktige_oppgaver
+    )
+
+
+# NIVÅ 3 – morsomme og krevende likninger (ID 39001–39030)
+likninger_nivaa3_oppgaver = [
+    ("tekst",    "🧟 I en zombiefilm er det x mennesker og (2x + 10) zombier. Totalt 100 skapninger. Finn x.", "30", None),
+    ("flervalg", "Løs: x² = 25",                                                        "5",    ["-5", "±5", "12,5"]),
+    ("tekst",    "🎯 En pil treffer blinken x ganger av 20 forsøk. Treffsikkerheten er 60%. Løs: x/20 = 0,6", "12", None),
+    ("skriv",    "Løs likningen: x/3 + x/6 = 5",                                       "10",   None),
+    ("flervalg", "Løs likningen: (x + 3)/2 = 7",                                        "11",   ["4", "17", "10"]),
+    ("tekst",    "🦸 En superhelt løper x km/t og en superskurk løper (x - 20) km/t. Helten innhenter skurken på 2 timer hvis skurken er 40 km foran. Løs: 2x - 2(x-20) = 40", "Alle x fungerer — helten innhenter alltid", None),
+    ("skriv",    "Løs likningen: 2x/3 = 8",                                            "12",   None),
+    ("flervalg", "Løs likningen: (2x - 1)/3 = 5",                                      "8",    ["14", "7", "16"]),
+    ("tekst",    "🍩 En baker lager x smultringer. Han spiser 5% av dem (= 3 stk). Løs: 0,05x = 3", "60", None),
+    ("skriv",    "Løs likningen: 3x/4 - 2 = 7",                                        "12",   None),
+    ("flervalg", "Løs likningen: (x + 5)/3 = (x - 1)/2",                               "13",   ["3", "7", "19"]),
+    ("tekst",    "🌍 Verden har x milliarder mennesker. Asia har 4,7 milliarder, som er 60% av verdens befolkning. Løs: 0,6x = 4,7. Rund av til én desimal.", "7,8", None),
+    ("skriv",    "Løs likningen: 5x/2 + 3 = 18",                                       "6",    None),
+    ("flervalg", "Løs likningen: x² - 3x = 0",                                         "x = 0 eller x = 3", ["x = 3", "x = 0", "x = -3"]),
+    ("tekst",    "🏦 Du setter inn x kr i banken med 5% rente. Etter ett år har du 1050 kr. Løs: x + 0,05x = 1050", "1000", None),
+    ("skriv",    "Løs likningen: (3x + 1)/4 = (x + 5)/2",                              "9",    None),
+    ("flervalg", "Løs likningen: 2x² = 50",                                             "5",    ["25", "10", "±5"]),
+    ("tekst",    "🎪 Et sirkus selger x voksenbilletter à 150 kr og (x + 20) barnebilletter à 80 kr. Totalt 9 200 kr. Finn x.", "32", None),
+    ("skriv",    "Løs likningen: x/4 + x/2 = 9",                                       "12",   None),
+    ("flervalg", "Løs likningen: 4(x - 1)/3 = 8",                                      "7",    ["5", "9", "6"]),
+    ("tekst",    "🚀 En rakett stiger x meter per sekund. Etter 30 sekunder er den 1500 meter oppe. Men vinden presser den 10 m/s ned. Løs: 30(x - 10) = 1500", "60", None),
+    ("skriv",    "Løs likningen: 3(x + 2) = x² - 2  (prøv x = 4)",                   "4",    None),
+    ("flervalg", "Løs likningen: (x - 3)(x + 3) = 0",                                  "x = 3 eller x = -3", ["x = 3", "x = -3", "x = 9"]),
+    ("tekst",    "🎲 Du kaster en terning. Sannsynligheten for å få 6 er 1/6. Hvis du kaster x ganger og forventer 5 seksere. Løs: x/6 = 5", "30", None),
+    ("skriv",    "Løs likningen: 2(x + 3)/5 = x - 1",                                 "11",   None),
+    ("flervalg", "Løs likningen: 3x/5 + x/3 = 28/15",                                  "2",    ["1", "3", "4"]),
+    ("tekst",    "🏠 En leilighet koster x kr. Etter 10% prisstigning er den verdt 550 000 kr. Løs: 1,1x = 550000", "500000", None),
+    ("skriv",    "Løs likningen: (4x - 5)/3 = (2x + 1)/2",                            "13",   None),
+    ("flervalg", "Løs likningen: x² + 2x - 8 = 0",                                     "x = 2 eller x = -4", ["x = 4 eller x = -2", "x = 2", "x = -4"]),
+    ("tekst",    "🧮 Tenk på et tall x. Gang det med 3, trekk fra 7, del på 2 og legg til 5. Svaret er 10. Finn x! (Løs: (3x-7)/2 + 5 = 10)", "7", None),
+]
+
+
+@app.route('/oppgaver/Likninger/nivaa3', methods=['GET', 'POST'])
+@login_required
+def likninger_nivaa3_route():
+    oppgaver = likninger_nivaa3_oppgaver
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = 39000 + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Likninger – Nivå 3", melding="Du fullførte nivå 3! Monstersterkt 💪🔥")
+
+    type_, oppgave_html, fasit, gale = oppgaver[nummer - 1]
+    alternativer = _fv_tall(fasit, gale) if type_ == "flervalg" else []
+
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        svar = request.form.get("svar_flervalg" if type_ == "flervalg" else "svar", "").strip().lower()
+        fasit_norm = fasit.lower()
+        if svar == "67":
+            resultat = "🤡🤮 Du er ikke morsom 🖕"
+            riktig = False
+        elif svar == fasit_norm:
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        else:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": 39000 + i, "link": f"/oppgaver/Likninger/nivaa3?n={i}"} for i in range(1, total + 1)]
+    return render_template("likninger_nivaa3.html",
+        oppgave_html=f'<p class="task-question-text">{oppgave_html}</p>',
+        type=type_, alternativer=alternativer,
+        nummer=nummer, total=total, resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny, riktige_oppgaver=riktige_oppgaver
+    )
+
+
 # START SERVER
 if __name__ == '__main__':
     app.run(debug=True)
