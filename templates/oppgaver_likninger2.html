@@ -1,0 +1,26 @@
+{% extends "oppgaver_layout.html" %}
+{% block title %}Likninger{% endblock %}
+{% block task_content %}
+
+<a href="#" class="close-btn" onclick="goToLastTopic()">✕</a>
+<h1>Likninger</h1>
+<h3>Velg nivå</h3>
+<div class="level-buttons">
+    <a href="/oppgaver/Likninger/nivaa1" class="level-btn level-btn-easy">Nivå 1</a>
+    <a href="/oppgaver/Likninger/nivaa2" class="level-btn level-btn-medium">Nivå 2</a>
+    <a href="/oppgaver/Likninger/nivaa3" class="level-btn level-btn-hard">Nivå 3</a>
+</div>
+<div class="theory-box mt-4">
+    <h3>Forklaring</h3>
+    <p>En likning er en påstand om at to uttrykk er like. Vi løser den ved å finne verdien av den ukjente (x) som gjør påstanden sann.</p>
+    <ul>
+        <li><strong>Nivå 1:</strong> Enkle likninger — én operasjon</li>
+        <li><strong>Nivå 2:</strong> Likninger med parenteser og to sider</li>
+        <li><strong>Nivå 3:</strong> Morsomme tekstoppgaver og krevende likninger</li>
+    </ul>
+</div>
+
+<script>
+function goToLastTopic() { window.location.href = "/oppgaver/trinn/8"; }
+</script>
+{% endblock %}
