@@ -1,0 +1,26 @@
+{% extends "oppgaver_layout.html" %}
+{% block title %}Regning med uttrykk{% endblock %}
+{% block task_content %}
+
+<a href="#" class="close-btn" onclick="goToLastTopic()">✕</a>
+<h1>Regning med uttrykk</h1>
+<h3>Velg nivå</h3>
+<div class="level-buttons">
+    <a href="/oppgaver/Regning med uttrykk/nivaa1" class="level-btn level-btn-easy">Nivå 1</a>
+    <a href="/oppgaver/Regning med uttrykk/nivaa2" class="level-btn level-btn-medium">Nivå 2</a>
+    <a href="/oppgaver/Regning med uttrykk/nivaa3" class="level-btn level-btn-hard">Nivå 3</a>
+</div>
+<div class="theory-box mt-4">
+    <h3>Forklaring</h3>
+    <p>Regning med uttrykk handler om å addere, subtrahere, multiplisere og dividere algebraiske uttrykk. Vi bruker distributivloven og samler like ledd.</p>
+    <ul>
+        <li><strong>Nivå 1:</strong> Addisjon og subtraksjon av uttrykk</li>
+        <li><strong>Nivå 2:</strong> Multiplikasjon og distribusjon av uttrykk</li>
+        <li><strong>Nivå 3:</strong> Sammensatte uttrykk og tekstoppgaver</li>
+    </ul>
+</div>
+
+<script>
+function goToLastTopic() { window.location.href = "/oppgaver/trinn/8"; }
+</script>
+{% endblock %}
