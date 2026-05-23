@@ -1,0 +1,135 @@
+{% extends "oppgaver_layout.html" %}
+{% block title %}Sette inn verdier – Nivå 1{% endblock %}
+{% block task_content %}
+
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const hasN = urlParams.has("n");
+const savedTask = localStorage.getItem("lastTask_sette_inn_nivaa1");
+if (!hasN && savedTask && savedTask !== "{{ nummer }}") {
+    window.location.href = "?n=" + savedTask;
+}
+</script>
+
+<a href="#" class="close-btn" onclick="goToLastTopic()">✕</a>
+<h1>Sette inn verdier – Nivå 1</h1>
+<p>Oppgave {{ nummer }} av {{ total }}</p>
+
+<div class="task-box">
+    <p class="task-question-title">Oppgave:</p>
+    <div class="pot-oppgave-visning">{{ oppgave_html | safe }}</div>
+
+    {# ── VANLIG / TEKST ── #}
+    {% if type in ["skriv", "tekst"] %}
+        <form method="POST" class="task-form">
+            <input type="text" name="svar" class="task-input" placeholder="Skriv svaret ditt" autocomplete="off">
+            <button class="task-submit">Sjekk svar</button>
+        </form>
+
+    {# ── FLERVALG ── #}
+    {% elif type == "flervalg" %}
+        <form method="POST" class="flervalg-grid">
+            {% for alt in alternativer %}
+            <button type="submit" name="svar_flervalg" value="{{ alt }}" class="flervalg-kort flervalg-kort-tall">
+                {{ alt }}
+            </button>
+            {% endfor %}
+        </form>
+
+    {# ── FINN FEILEN ── #}
+    {% elif type == "finn_feilen" %}
+        <div class="finn-feilen-intro">⚠️ Ett av stegene under er feil. Klikk på det gale steget!</div>
+        <form method="POST" class="finn-feilen-liste">
+            {% for steg in steg_liste %}
+            <button type="submit" name="svar_flervalg" value="{{ loop.index }}" class="finn-feilen-steg">
+                <span class="steg-nr">Steg {{ loop.index }}</span>
+                <span class="steg-tekst">{{ steg }}</span>
+            </button>
+            {% endfor %}
+        </form>
+
+    {# ── MATCHING ── #}
+    {% elif type == "matching" %}
+        <p class="matching-intro">Klikk på et uttrykk, deretter klikk på riktig svar.</p>
+        <div class="matching-container" id="matchingApp">
+            <div class="matching-col" id="col-left">
+                {% for par in par_liste %}
+                <div class="matching-kort match-left" data-id="{{ loop.index }}" onclick="velgVenstre(this)">
+                    {{ par[0] }}
+                </div>
+                {% endfor %}
+            </div>
+            <div class="matching-col" id="col-right">
+                {% for par in par_liste_blandet %}
+                <div class="matching-kort match-right" data-id="{{ par[2] }}" onclick="velgHoyre(this)">
+                    {{ par[1] }}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <form method="POST" id="matchingForm">
+            <input type="hidden" name="matching_svar" id="matchingInput" value="">
+            <button type="submit" class="task-submit" style="margin-top:16px;" onclick="sendMatching()">Sjekk svar</button>
+        </form>
+        <script>
+        let valgtVenstre = null;
+        let koblinger = {};
+
+        function velgVenstre(el) {
+            document.querySelectorAll('.match-left').forEach(e => e.classList.remove('match-valgt'));
+            el.classList.add('match-valgt');
+            valgtVenstre = el.dataset.id;
+        }
+
+        function velgHoyre(el) {
+            if (!valgtVenstre) return;
+            Object.keys(koblinger).forEach(k => {
+                if (koblinger[k] === el.dataset.id) delete koblinger[k];
+            });
+            koblinger[valgtVenstre] = el.dataset.id;
+            document.querySelectorAll('.match-right').forEach(e => e.classList.remove('match-koblet'));
+            document.querySelectorAll('.match-left').forEach(e => e.classList.remove('match-valgt', 'match-koblet'));
+            Object.keys(koblinger).forEach(k => {
+                document.querySelectorAll('.match-left[data-id="'+k+'"]').forEach(e => e.classList.add('match-koblet'));
+                document.querySelectorAll('.match-right[data-id="'+koblinger[k]+'"]').forEach(e => e.classList.add('match-koblet'));
+            });
+            valgtVenstre = null;
+        }
+
+        function sendMatching() {
+            document.getElementById('matchingInput').value = JSON.stringify(koblinger);
+        }
+        </script>
+
+    {# ── STEG FOR STEG ── #}
+    {% elif type == "steg" %}
+        <div class="steg-intro">✏️ Løs oppgaven steg for steg. Fyll inn hvert steg.</div>
+        <form method="POST" class="steg-form">
+            {% for steg in steg_liste %}
+            <div class="steg-rad">
+                <label class="steg-label">{{ steg }}</label>
+                <input type="text" name="steg_{{ loop.index }}" class="steg-input" placeholder="Svar" autocomplete="off">
+            </div>
+            {% endfor %}
+            <button class="task-submit" style="margin-top:16px;">Sjekk alle steg</button>
+        </form>
+    {% endif %}
+
+    {% if resultat %}
+        <div class="task-result {% if riktig %}correct-glow{% else %}wrong-glow{% endif %}">
+            {{ resultat | safe }}
+        </div>
+    {% endif %}
+</div>
+
+{% if riktig %}
+    <a href="?n={{ nummer + 1 }}" class="next-btn">Neste oppgave →</a>
+{% endif %}
+
+<script>
+localStorage.setItem("lastTask_sette_inn_nivaa1", "{{ nummer }}");
+localStorage.setItem("lastSubtopic", "Sette inn verdier");
+localStorage.setItem("lastLevel", "nivaa1");
+function goToLastTopic() { window.location.href = "/oppgaver/trinn/8"; }
+</script>
+{% endblock %}
