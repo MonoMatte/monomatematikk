@@ -2119,3 +2119,158 @@ body {
     line-height: 1.7;
     color: #1a1f36;
 }
+
+
+/* -------------------------------------------------- */
+/* FINN FEILEN */
+/* -------------------------------------------------- */
+.finn-feilen-intro {
+    background: #fff8e1;
+    border-left: 4px solid #f59e0b;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    font-size: 0.95rem;
+}
+
+.finn-feilen-liste {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.finn-feilen-steg {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    border: 2px solid #e0e6f0;
+    background: white;
+    cursor: pointer;
+    text-align: left;
+    transition: 0.2s ease;
+    font-size: 1rem;
+}
+
+.finn-feilen-steg:hover {
+    border-color: #ef4444;
+    background: #fef2f2;
+    transform: translateX(4px);
+}
+
+.steg-nr {
+    background: #f1f5f9;
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #64748b;
+    white-space: nowrap;
+}
+
+.steg-tekst {
+    font-weight: 500;
+    color: #1a1f36;
+}
+
+/* -------------------------------------------------- */
+/* MATCHING */
+/* -------------------------------------------------- */
+.matching-intro {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin-bottom: 14px;
+}
+
+.matching-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.matching-col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.matching-kort {
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 2px solid #e0e6f0;
+    background: white;
+    cursor: pointer;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: 0.2s ease;
+    color: #1a1f36;
+}
+
+.matching-kort:hover {
+    border-color: #0d6efd;
+    background: #f0f5ff;
+}
+
+.match-valgt {
+    border-color: #0d6efd !important;
+    background: #dbeafe !important;
+    transform: scale(1.03);
+}
+
+.match-koblet {
+    border-color: #28c76f !important;
+    background: #f0fdf4 !important;
+    color: #166534;
+}
+
+/* -------------------------------------------------- */
+/* STEG FOR STEG */
+/* -------------------------------------------------- */
+.steg-intro {
+    background: #f0f9ff;
+    border-left: 4px solid #0d6efd;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    font-size: 0.95rem;
+    color: #1e40af;
+}
+
+.steg-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.steg-rad {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.steg-label {
+    min-width: 200px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #1a1f36;
+}
+
+.steg-input {
+    flex: 1;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(0,0,0,0.15);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.steg-input:focus {
+    outline: none;
+    border-color: #0d6efd;
+    box-shadow: 0 0 6px rgba(13,110,253,0.3);
+}
