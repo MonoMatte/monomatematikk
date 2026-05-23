@@ -3361,6 +3361,348 @@ def likninger_nivaa3_route():
     )
 
 
+
+# ─────────────────────────────────────────────
+# SETTE INN VERDIER
+# ─────────────────────────────────────────────
+
+@app.route('/oppgaver/sette_inn')
+@login_required
+def sette_inn():
+    return render_template('oppgaver_sette_inn.html')
+
+
+def sjekk_matching(svar_json, riktige_par):
+    """Sjekker om alle matching-koblinger er riktige. riktige_par = {str(i): str(i)}"""
+    import json
+    try:
+        svar = json.loads(svar_json)
+        for k, v in riktige_par.items():
+            if str(svar.get(k)) != str(v):
+                return False
+        return len(svar) == len(riktige_par)
+    except:
+        return False
+
+
+def lag_blandet_matching(par_liste):
+    """Blander høyre-siden av par og legger til original index."""
+    import random
+    indeksert = [(p[0], p[1], str(i+1)) for i, p in enumerate(par_liste)]
+    blandet = indeksert[:]
+    random.shuffle(blandet)
+    return blandet
+
+
+# NIVÅ 1 – enkle uttrykk, finn feilen, matching (ID 40001–40030)
+# Format: (type, oppgave_html, fasit, gale_eller_ekstra_data)
+# ekstra_data for finn_feilen = liste av steg-strenger, fasit = str(feil_steg_nr)
+# ekstra_data for matching = liste av (venstre, høyre) par, fasit = "riktig"
+# ekstra_data for steg = liste av (steg_label, fasit_svar), fasit = "alle"
+
+sette_inn_nivaa1_oppgaver = [
+    ("skriv",       "Hva er verdien av 3x + 2 når x = 4?",                                 "14",       None),
+    ("flervalg",    "Hva er verdien av 5y - 3 når y = 2?",                                  "7",        ["3", "13", "10"]),
+    ("skriv",       "Hva er verdien av 2a + 2b når a = 3 og b = 5?",                       "16",       None),
+    ("flervalg",    "Hva er verdien av 4n + 1 når n = 3?",                                  "13",       ["7", "16", "12"]),
+    ("tekst",       "🌡️ Temperaturen i Celsius er C. Formelen for Fahrenheit er F = 1,8C + 32. Hva er F når C = 0?", "32", None),
+    ("finn_feilen",
+     "🔍 Noen regnet ut 2x + 3 når x = 5. Finn det gale steget!",
+     "2",
+     ["Setter inn x = 5: 2·5 + 3",
+      "Regner: 2·5 = 15  ← HER ER FEILEN (skal være 10)",
+      "Legger til 3: 15 + 3 = 18"]),
+    ("skriv",       "Hva er verdien av 6 - x når x = 4?",                                  "2",        None),
+    ("flervalg",    "Hva er verdien av 2x + 3y når x = 1 og y = 2?",                       "8",        ["5", "12", "7"]),
+    ("matching",
+     "Match hvert uttrykk med riktig verdi når x = 3",
+     "riktig",
+     [("2x + 1", "7"), ("x²", "9"), ("3x - 2", "7 — nei! 7"), ("x + 10", "13")]),
+    ("skriv",       "Hva er verdien av a² + b når a = 2 og b = 5?",                        "9",        None),
+    ("flervalg",    "Hva er verdien av 10 - 2x når x = 3?",                                "4",        ["7", "8", "16"]),
+    ("tekst",       "🚗 Farten er v km/t. Distansen etter t timer er d = v·t. Hva er d når v = 60 og t = 2?", "120", None),
+    ("skriv",       "Hva er verdien av 3(x + 2) når x = 4?",                               "18",       None),
+    ("flervalg",    "Hva er verdien av x² - x når x = 5?",                                  "20",       ["25", "30", "4"]),
+    ("tekst",       "📦 En eske har x blyanter. Du har 4 esker og 3 ekstra. Uttrykket er 4x + 3. Hva er verdien når x = 6?", "27", None),
+    ("skriv",       "Hva er verdien av 2x² når x = 3?",                                    "18",       None),
+    ("flervalg",    "Hva er verdien av (x + 3)² når x = 2?",                               "25",       ["10", "13", "7"]),
+    ("finn_feilen",
+     "🔍 Noen regnet ut 3(x - 2) når x = 6. Finn feilen!",
+     "2",
+     ["Setter inn x = 6: 3(6 - 2)",
+      "Regner parentesen: 6 - 2 = 2  ← FEIL (skal være 4)",
+      "Ganger: 3 · 2 = 6"]),
+    ("tekst",       "🎯 Poengsummen er P = 10x - 5 der x er antall treff. Hva er P når x = 7?", "65", None),
+    ("skriv",       "Hva er verdien av 4x + 3y - 2 når x = 2 og y = 3?",                  "15",       None),
+    ("flervalg",    "Hva er verdien av 5(x + 1) - 3 når x = 4?",                           "22",       ["20", "27", "17"]),
+    ("skriv",       "Hva er verdien av x³ når x = 2?",                                     "8",        None),
+    ("tekst",       "💰 Lønn = 200x + 500 der x er antall timer. Hva er lønnen etter 8 timer?", "2100", None),
+    ("matching",
+     "Match hvert uttrykk med riktig verdi når x = 2 og y = 3",
+     "riktig",
+     [("x + y", "5"), ("2x + y", "7"), ("xy", "6"), ("x² + y", "7 — nei! 7")]),
+    ("flervalg",    "Hva er verdien av 2(3x - 1) når x = 3?",                              "16",       ["17", "15", "11"]),
+    ("skriv",       "Hva er verdien av x² + 2x + 1 når x = 3?",                            "16",       None),
+    ("tekst",       "📐 Arealet av en trekant er A = ½·g·h. Hva er A når g = 8 og h = 5?", "20", None),
+    ("flervalg",    "Hva er verdien av 3x² - 2x + 1 når x = 2?",                           "9",        ["11", "13", "7"]),
+    ("steg",
+     "📝 Regn ut 4x² - 3x + 2 steg for steg når x = 3",
+     "alle",
+     [("Steg 1: Regn ut x² (= 3²)", "9"),
+      ("Steg 2: Gang med 4 (= 4·9)", "36"),
+      ("Steg 3: Regn ut 3x (= 3·3)", "9"),
+      ("Steg 4: Sett inn: 36 - 9 + 2", "29")]),
+    ("skriv",       "Hva er verdien av (2x + 1)(x - 3) når x = 5?",                       "33",       None),
+]
+
+
+def kjor_sette_inn(oppgaver, id_base, template_navn, link_prefix):
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = id_base + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html",
+            tittel="Sette inn verdier",
+            melding="Du fullførte dette nivået! 🎉")
+
+    o = oppgaver[nummer - 1]
+    type_ = o[0]
+    oppgave_html = o[1]
+    fasit = o[2]
+    ekstra = o[3]
+
+    alternativer = []
+    steg_liste = []
+    par_liste = []
+    par_liste_blandet = []
+
+    if type_ == "flervalg":
+        alternativer = _fv_tall(fasit, ekstra)
+    elif type_ == "finn_feilen":
+        steg_liste = ekstra
+        alternativer = []
+    elif type_ == "matching":
+        par_liste = ekstra
+        par_liste_blandet = lag_blandet_matching(ekstra)
+    elif type_ == "steg":
+        steg_liste = [s[0] for s in ekstra]
+
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        ok = False
+
+        if type_ in ["skriv", "tekst"]:
+            svar = request.form.get("svar", "").strip().replace(".", ",")
+            fasit_n = fasit.replace(".", ",")
+            if svar == "67":
+                resultat = "🤡🤮 Du er ikke morsom 🖕"
+            else:
+                ok = svar.lower() == fasit_n.lower()
+
+        elif type_ == "flervalg":
+            svar = request.form.get("svar_flervalg", "").strip()
+            if svar == "67":
+                resultat = "🤡🤮 Du er ikke morsom 🖕"
+            else:
+                ok = svar.lower() == fasit.lower()
+
+        elif type_ == "finn_feilen":
+            svar = request.form.get("svar_flervalg", "").strip()
+            ok = svar == fasit
+
+        elif type_ == "matching":
+            svar_json = request.form.get("matching_svar", "{}")
+            riktige = {str(i+1): str(i+1) for i in range(len(ekstra))}
+            ok = sjekk_matching(svar_json, riktige)
+
+        elif type_ == "steg":
+            alle_riktige = all(
+                request.form.get(f"steg_{i+1}", "").strip().replace(".", ",") == s[1].replace(".", ",")
+                for i, s in enumerate(ekstra)
+            )
+            if alle_riktige:
+                ok = True
+            else:
+                feil = [s[0] for i, s in enumerate(ekstra)
+                        if request.form.get(f"steg_{i+1}", "").strip().replace(".", ",") != s[1].replace(".", ",")]
+                resultat = "❌ Feil i: " + ", ".join(feil)
+
+        if ok:
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)",
+                (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        elif not resultat:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": id_base + i, "link": f"{link_prefix}?n={i}"} for i in range(1, total + 1)]
+    return render_template(template_navn,
+        oppgave_html=f'<p class="task-question-text">{oppgave_html}</p>',
+        type=type_, alternativer=alternativer,
+        steg_liste=steg_liste,
+        par_liste=par_liste, par_liste_blandet=par_liste_blandet,
+        nummer=nummer, total=total, resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny, riktige_oppgaver=riktige_oppgaver
+    )
+
+
+@app.route('/oppgaver/Sette inn verdier/nivaa1', methods=['GET', 'POST'])
+@login_required
+def sette_inn_nivaa1_route():
+    return kjor_sette_inn(
+        sette_inn_nivaa1_oppgaver, 40000,
+        "sette_inn_nivaa1.html",
+        "/oppgaver/Sette inn verdier/nivaa1"
+    )
+
+
+# NIVÅ 2 – sammensatte uttrykk og formler (ID 41001–41030)
+sette_inn_nivaa2_oppgaver = [
+    ("skriv",       "Hva er verdien av 3x² + 2x - 1 når x = 3?",                           "32",       None),
+    ("flervalg",    "Hva er verdien av 2x³ - x² når x = 2?",                               "12",       ["8", "10", "16"]),
+    ("tekst",       "⚡ Effekt P = U²/R. Hva er P når U = 10 og R = 5?",                   "20",       None),
+    ("finn_feilen",
+     "🔍 Noen regnet ut x² + 3x når x = 4. Finn det gale steget!",
+     "3",
+     ["Setter inn x = 4: 4² + 3·4",
+      "Regner potensen: 4² = 16",
+      "Regner 3x: 3·4 = 7  ← FEIL (skal være 12)",
+      "Legger sammen: 16 + 7 = 23"]),
+    ("skriv",       "Hva er verdien av (x + y)(x - y) når x = 5 og y = 3?",               "16",       None),
+    ("flervalg",    "Hva er verdien av x² + y² når x = 3 og y = 4?",                       "25",       ["49", "14", "7"]),
+    ("matching",
+     "Match formelen med riktig verdi (x = 4)",
+     "riktig",
+     [("x² + 2x", "24"), ("3x - 4", "8"), ("2(x + 1)", "10"), ("x³ - x", "60")]),
+    ("tekst",       "🏃 Distansen er s = v₀t + ½at². Hva er s når v₀ = 10, a = 2 og t = 3?", "39", None),
+    ("skriv",       "Hva er verdien av 4x² - 3x + 2 når x = 2?",                           "12",       None),
+    ("flervalg",    "Hva er verdien av (2x - 1)² når x = 3?",                              "25",       ["36", "11", "9"]),
+    ("tekst",       "💡 Energi E = mc². Hva er E når m = 2 og c = 3?",                     "18",       None),
+    ("skriv",       "Hva er verdien av 2x² + xy - y² når x = 3 og y = 2?",                "18",       None),
+    ("flervalg",    "Hva er verdien av x(x + 1)(x + 2) når x = 3?",                        "60",       ["24", "36", "120"]),
+    ("finn_feilen",
+     "🔍 Noen regnet ut 2(x + 3)² når x = 1. Finn feilen!",
+     "2",
+     ["Setter inn x = 1: 2(1 + 3)²",
+      "Regner parentesen: 1 + 3 = 8  ← FEIL (skal være 4)",
+      "Tar kvadratet: 8² = 64",
+      "Ganger med 2: 2·64 = 128"]),
+    ("tekst",       "📐 Volumet av en kule er V = (4/3)πr³. Bruk π ≈ 3 og r = 2. Hva er V (omtrent)?", "32", None),
+    ("skriv",       "Hva er verdien av x² - 4x + 4 når x = 5?",                            "9",        None),
+    ("flervalg",    "Hva er verdien av 3x² - 2xy + y² når x = 2 og y = 1?",               "11",       ["9", "13", "15"]),
+    ("steg",
+     "📝 Regn ut (x + 2)(x - 1) steg for steg når x = 4",
+     "alle",
+     [("Steg 1: Regn ut (x + 2) = 4 + 2", "6"),
+      ("Steg 2: Regn ut (x - 1) = 4 - 1", "3"),
+      ("Steg 3: Gang sammen: 6 · 3", "18")]),
+    ("tekst",       "🚀 Høyde h = -5t² + 20t. Hva er høyden etter t = 3 sekunder?",       "15",       None),
+    ("skriv",       "Hva er verdien av (x + y)² - 2xy når x = 3 og y = 4?",               "25",       None),
+    ("flervalg",    "Hva er verdien av x⁴ - x² når x = 2?",                               "12",       ["8", "16", "6"]),
+    ("matching",
+     "Match formelen med riktig verdi (x = 3, y = 2)",
+     "riktig",
+     [("x² + y²", "13"), ("(x+y)²", "25"), ("x² - y²", "5"), ("2xy", "12")]),
+    ("tekst",       "🌡️ Formelen K = C + 273 gir Kelvin fra Celsius. Hva er K når C = 25?", "298", None),
+    ("skriv",       "Hva er verdien av 5x² - 4xy + 3y² når x = 2 og y = 1?",             "15",       None),
+    ("flervalg",    "Hva er verdien av (x - 2)³ når x = 4?",                               "8",        ["4", "16", "6"]),
+    ("tekst",       "💰 Kapital K = P(1 + r)^n. Hva er K når P = 1000, r = 0,1 og n = 2?", "1210", None),
+    ("skriv",       "Hva er verdien av x² + 2xy + y² når x = 4 og y = 3?",               "49",       None),
+    ("flervalg",    "Hva er verdien av 2x³ + 3x² - x + 1 når x = 2?",                     "27",       ["23", "31", "19"]),
+    ("tekst",       "📊 Fortjeneste F = px - kx - fk der p = pris, k = kostnad per enhet, fk = faste kostnader. Hva er F når p = 50, k = 30, x = 100, fk = 500?", "1500", None),
+    ("skriv",       "Hva er verdien av (2x + y)(x - 2y) når x = 3 og y = 1?",            "21",       None),
+]
+
+
+@app.route('/oppgaver/Sette inn verdier/nivaa2', methods=['GET', 'POST'])
+@login_required
+def sette_inn_nivaa2_route():
+    return kjor_sette_inn(
+        sette_inn_nivaa2_oppgaver, 41000,
+        "sette_inn_nivaa2.html",
+        "/oppgaver/Sette inn verdier/nivaa2"
+    )
+
+
+# NIVÅ 3 – formler fra virkeligheten og krevende uttrykk (ID 42001–42030)
+sette_inn_nivaa3_oppgaver = [
+    ("tekst",       "🌍 Gravitasjonskraft F = G·m₁·m₂/r². Bruk G=6, m₁=5, m₂=4, r=2. Hva er F?", "30", None),
+    ("flervalg",    "Hva er verdien av x³ + 3x² + 3x + 1 når x = 2?",                     "27",       ["19", "35", "9"]),
+    ("finn_feilen",
+     "🔍 Noen regnet ut (2x + 3)(x - 1) når x = 3. Finn feilen!",
+     "3",
+     ["Setter inn: (2·3 + 3)(3 - 1)",
+      "Regner første parentes: 2·3 + 3 = 9",
+      "Regner andre parentes: 3 - 1 = 1  ← FEIL (skal være 2)",
+      "Ganger: 9 · 1 = 9"]),
+    ("skriv",       "Hva er verdien av x⁴ - 2x³ + x² når x = 3?",                         "36",       None),
+    ("tekst",       "🏦 Sluttverdien er S = P·(1 + r)^n. Hva er S når P = 2000, r = 0,05 og n = 3? (Rund av til nærmeste heltall)", "2315", None),
+    ("matching",
+     "Match formelen med riktig verdi (x = 2)",
+     "riktig",
+     [("x⁴ - x²", "12"), ("(x+1)³", "27"), ("3x² - 2x³", "-4"), ("x⁵", "32")]),
+    ("tekst",       "⚡ Ohms lov: I = U/R. Effekt P = U·I = U²/R. Hva er P når U = 12 og R = 4?", "36", None),
+    ("skriv",       "Hva er verdien av (x + 1)⁴ når x = 1?",                              "16",       None),
+    ("flervalg",    "Hva er verdien av x² + 4x + 4 - (x - 2)² når x = 5?",               "16",       ["0", "25", "36"]),
+    ("tekst",       "🎢 Farten på en berg-og-dal-bane er v = √(2gh). Bruk g = 10 og h = 20. Hva er v²? (v² = 2gh)", "400", None),
+    ("steg",
+     "📝 Regn ut 2x³ - 3x² + x - 5 steg for steg når x = 3",
+     "alle",
+     [("Steg 1: x³ = 3³", "27"),
+      ("Steg 2: 2x³ = 2·27", "54"),
+      ("Steg 3: x² = 3²", "9"),
+      ("Steg 4: 3x² = 3·9", "27"),
+      ("Steg 5: Sett inn: 54 - 27 + 3 - 5", "25")]),
+    ("skriv",       "Hva er verdien av (x² - 1)/(x + 1) når x = 4?",                      "3",        None),
+    ("flervalg",    "Hva er verdien av 2x³ - x² + 3x - 7 når x = 2?",                     "11",       ["9", "13", "7"]),
+    ("tekst",       "📡 Signalstyrken S = P/d². Hva er S når P = 100 og d = 5?",           "4",        None),
+    ("matching",
+     "Match med riktig verdi (x = 2, y = 3)",
+     "riktig",
+     [("x³ + y²", "17"), ("(xy)²", "36"), ("x² · y³", "108"), ("(x+y)³", "125")]),
+    ("skriv",       "Hva er verdien av x³ - 3x² + 3x - 1 når x = 4?",                     "27",       None),
+    ("tekst",       "🌊 Bølgelengde λ = v/f. Hva er λ når v = 340 og f = 170?",           "2",        None),
+    ("flervalg",    "Hva er verdien av (x + y + z)² når x = 1, y = 2, z = 3?",            "36",       ["14", "6", "100"]),
+    ("tekst",       "🎯 Sannsynligheten for x treff av n forsøk: P = (x/n)·100%. Hva er P når x = 7 og n = 20?", "35%", None),
+    ("skriv",       "Hva er verdien av 4x² - (2x - 1)² når x = 3?",                       "11",       None),
+    ("finn_feilen",
+     "🔍 Noen regnet ut x³ - 2x² + x når x = 4. Finn feilen!",
+     "2",
+     ["Setter inn: 4³ - 2·4² + 4",
+      "Regner 4³: 4³ = 32  ← FEIL (skal være 64)",
+      "Regner 2·4²: 2·16 = 32",
+      "Setter inn: 32 - 32 + 4 = 4"]),
+    ("tekst",       "💻 En algoritme bruker T = 2n² + 3n operasjoner. Hva er T når n = 10?", "230", None),
+    ("flervalg",    "Hva er verdien av (x - y)³ når x = 5 og y = 2?",                     "27",       ["9", "125", "6"]),
+    ("skriv",       "Hva er verdien av (x² + 2)(x - 1) når x = 3?",                       "22",       None),
+    ("tekst",       "📐 Overflaten av en sylinder: S = 2πr² + 2πrh. Bruk π ≈ 3, r = 2, h = 5. Hva er S?", "84", None),
+    ("flervalg",    "Hva er verdien av x⁴ + 4x³ + 6x² + 4x + 1 når x = 1?",              "16",       ["8", "32", "4"]),
+    ("tekst",       "🏎️ Stoppedistansen er d = v²/2a. Hva er d når v = 20 og a = 5?",    "40",       None),
+    ("skriv",       "Hva er verdien av (x + y)³ - (x³ + y³) når x = 2 og y = 1?",        "9",        None),
+    ("flervalg",    "Hva er verdien av 5x⁴ - 3x³ + 2x² - x + 1 når x = 1?",              "4",        ["6", "8", "10"]),
+    ("tekst",       "🌡️ Idealgassloven: P = nRT/V. Hva er P når n = 2, R = 8, T = 300 og V = 4?", "1200", None),
+]
+
+
+@app.route('/oppgaver/Sette inn verdier/nivaa3', methods=['GET', 'POST'])
+@login_required
+def sette_inn_nivaa3_route():
+    return kjor_sette_inn(
+        sette_inn_nivaa3_oppgaver, 42000,
+        "sette_inn_nivaa3.html",
+        "/oppgaver/Sette inn verdier/nivaa3"
+    )
+
+
 # START SERVER
 if __name__ == '__main__':
     app.run(debug=True)
