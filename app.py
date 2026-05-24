@@ -3703,6 +3703,284 @@ def sette_inn_nivaa3_route():
     )
 
 
+
+# ─────────────────────────────────────────────
+# TALL OG SYMBOLER
+# ─────────────────────────────────────────────
+
+@app.route('/oppgaver/tall_symboler')
+@login_required
+def tall_symboler():
+    return render_template('oppgaver_tall_symboler.html')
+
+
+# NIVÅ 1 – grunnleggende symboler: =, ≠, <, >, ≤, ≥ (ID 43001–43030)
+
+# NIVÅ 1 – lese og tolke symboler, enkle sammenligninger (ID 43001–43030)
+# REGLER: Ingen svar krever spesialtegn. Alle symbol-svar er FLERVALG.
+tall_symboler_nivaa1_oppgaver = [
+    ("flervalg", "Hva betyr symbolet < ?",
+     "Mindre enn", ["Større enn", "Er lik", "Er ikke lik"]),
+    ("flervalg", "Hva betyr symbolet > ?",
+     "Større enn", ["Mindre enn", "Er lik", "Pluss"]),
+    ("flervalg", "Hva betyr symbolet = ?",
+     "Er lik", ["Er ikke lik", "Større enn", "Mindre enn"]),
+    ("flervalg", "Hva betyr symbolet ≠ ?",
+     "Er ikke lik", ["Er lik", "Større enn", "Mindre enn"]),
+    ("flervalg", "Er 5 > 3 sant eller usant?",
+     "Sant", ["Usant", "Vet ikke", "Verken sant eller usant"]),
+    ("flervalg", "Er 7 < 4 sant eller usant?",
+     "Usant", ["Sant", "Kan ikke si", "Begge deler"]),
+    ("flervalg", "Hvilket symbol passer? 8 ___ 10",
+     "<", [">", "=", "≠"]),
+    ("flervalg", "Hvilket symbol passer? 15 ___ 9",
+     ">", ["<", "=", "≠"]),
+    ("flervalg", "Hvilket symbol passer? 3 + 4 ___ 7",
+     "=", ["<", ">", "≠"]),
+    ("flervalg", "Hvilket symbol passer? 2 · 5 ___ 9",
+     ">", ["<", "=", "≠"]),
+    ("tekst", "🌡️ Temperaturen ute er -5°C og inne er 20°C. Hvilket er størst?",
+     "20", None),
+    ("flervalg", "Er 0 > -1 sant eller usant?",
+     "Sant", ["Usant", "Vet ikke", "Begge"]),
+    ("flervalg", "Hva betyr ≤ ?",
+     "Mindre enn eller lik", ["Større enn eller lik", "Er lik", "Ikke lik"]),
+    ("flervalg", "Hva betyr ≥ ?",
+     "Større enn eller lik", ["Mindre enn eller lik", "Er lik", "Større enn"]),
+    ("flervalg", "Er 4 ≤ 4 sant eller usant?",
+     "Sant", ["Usant", "Vet ikke", "Begge"]),
+    ("tekst", "🏆 Lag A har 45 poeng og Lag B har 38 poeng. Hvem har flest poeng?",
+     "Lag A", None),
+    ("flervalg", "Er 6 ≥ 7 sant eller usant?",
+     "Usant", ["Sant", "Begge", "Vet ikke"]),
+    ("flervalg", "Hva betyr ≈ ?",
+     "Tilnærmet lik", ["Er lik", "Ikke lik", "Større enn"]),
+    ("flervalg", "Er π ≈ 3,14 sant eller usant?",
+     "Sant", ["Usant", "Begge", "Vet ikke"]),
+    ("tekst", "🎮 Du trenger minst 10 liv for å spille. Du har 12. Har du nok?",
+     "ja", None),
+    ("flervalg", "Hvilket symbol passer? 3² ___ 8",
+     ">", ["<", "=", "≠"]),
+    ("flervalg", "Hvilket symbol passer? 2³ ___ 9",
+     "<", [">", "=", "≠"]),
+    ("tekst", "🍕 En pizza har 8 biter. Du spiser 3. Er antall spiste biter større enn antall igjen?",
+     "nei", None),
+    ("matching",
+     "Match symbolet med riktig betydning",
+     "riktig",
+     [("<", "Mindre enn"), (">", "Større enn"), ("=", "Er lik"), ("≠", "Er ikke lik")]),
+    ("flervalg", "Hvilket symbol passer? 0,5 ___ ½",
+     "=", ["<", ">", "≠"]),
+    ("flervalg", "Er -10 < -5 sant eller usant?",
+     "Sant", ["Usant", "Vet ikke", "Begge"]),
+    ("tekst", "❄️ Hvilken temperatur er lavest: -8°C eller -2°C?",
+     "-8", None),
+    ("steg",
+     "📝 Sammenlign 2³ og 3²",
+     "alle",
+     [("Steg 1: Regn ut 2³ (= 2·2·2)", "8"),
+      ("Steg 2: Regn ut 3² (= 3·3)", "9"),
+      ("Steg 3: Hvem er størst? Skriv 2³ eller 3²", "3²")]),
+    ("flervalg", "Hvilket symbol passer? 4! ___ 20   (4! = 24)",
+     ">", ["<", "=", "≠"]),
+    ("finn_feilen",
+     "🔍 Noen sammenlignet 2³ og 4². Finn det gale steget!",
+     "2",
+     ["Regner 2³: 2·2·2 = 8",
+      "Regner 4²: 4·4 = 8  ← FEIL (4·4 = 16, ikke 8!)",
+      "Sammenligner: 8 < 16, altså 2³ < 4²"]),
+]
+
+
+@app.route('/oppgaver/Tall og symboler/nivaa1', methods=['GET', 'POST'])
+@login_required
+def tall_symboler_nivaa1_route():
+    return kjor_sette_inn(
+        tall_symboler_nivaa1_oppgaver, 43000,
+        "tall_symboler_nivaa1.html",
+        "/oppgaver/Tall og symboler/nivaa1"
+    )
+
+
+# NIVÅ 2 – bruke symboler i sammenheng med tall og ulikheter (ID 44001–44030)
+tall_symboler_nivaa2_oppgaver = [
+    ("flervalg", "Hva betyr |−7|?",
+     "7", ["−7", "0", "49"]),
+    ("flervalg", "Hva er |−12|?",
+     "12", ["−12", "144", "0"]),
+    ("skriv",    "Hva er |−9| + |3|?",                                "12", None),
+    ("flervalg", "Hva er |5 − 8|?",
+     "3", ["−3", "13", "40"]),
+    ("tekst", "❄️ Oslo hadde −8°C og Bergen hadde −3°C. Absoluttverdien viser avstand fra 0. Hvilken by er kaldest?",
+     "Oslo", None),
+    ("flervalg", "Hva betyr x < 5 i ord?",
+     "x er mindre enn 5", ["x er 5", "x er større enn 5", "x er lik 5"]),
+    ("flervalg", "Hvilke tall oppfyller x > 3? (Velg riktig gruppe)",
+     "4, 5, 6, 7", ["1, 2, 3", "0, 1, 2", "3, 3, 3"]),
+    ("tekst", "🎯 Løs ulikheten x + 3 > 7. Hva er det minste hele tall x kan være?",
+     "5", None),
+    ("flervalg", "Hva betyr 3 ∈ {1, 2, 3, 4}?",
+     "3 er med i mengden", ["3 er ikke i mengden", "3 ganger mengden", "3 er lik mengden"]),
+    ("flervalg", "Er 7 ∈ {2, 4, 6, 8}?",
+     "Nei", ["Ja", "Kanskje", "Vet ikke"]),
+    ("tekst", "🔢 Mengden A = {1, 3, 5, 7, 9}. Er 5 med i A? Skriv ja eller nei.",
+     "ja", None),
+    ("finn_feilen",
+     "🔍 Noen løste 2x < 10. Finn feilen!",
+     "2",
+     ["Starter med: 2x < 10",
+      "Deler på 2: x > 5  ← FEIL (skal være x < 5 når man deler, ikke snur tegnet!)",
+      "Konklusjon: x > 5"]),
+    ("flervalg", "Hva er ∑ av {2, 4, 6}?",
+     "12", ["6", "24", "8"]),
+    ("skriv",    "Hva er summen (∑) av {10, 20, 30, 40}?",            "100", None),
+    ("tekst", "📊 ∑ betyr sum. Hva er ∑ av tallene 5, 10, 15 og 20?",
+     "50", None),
+    ("flervalg", "Hva er |−3 + 10|?",
+     "7", ["−7", "13", "30"]),
+    ("matching",
+     "Match symbolet med riktig forklaring",
+     "riktig",
+     [("|x|", "Absoluttverdien av x"), ("∈", "Er et element i"), ("∑", "Summen av"), ("≈", "Tilnærmet lik")]),
+    ("tekst", "🎮 Løs: 3x ≤ 12. Hva er det største hele tallet x kan være?",
+     "4", None),
+    ("flervalg", "Hva er |−20|?",
+     "20", ["−20", "2", "200"]),
+    ("skriv",    "Hva er |7 − 15|?",                                  "8", None),
+    ("steg",
+     "📝 Løs ulikheten 4x − 2 > 10 steg for steg",
+     "alle",
+     [("Steg 1: Legg til 2 på begge sider: 4x > ?", "12"),
+      ("Steg 2: Del på 4: x > ?", "3"),
+      ("Steg 3: Minste hele tall som oppfyller ulikheten", "4")]),
+    ("tekst", "🌡️ Termometeret viser −15°C. Hva er absoluttverdien?",
+     "15", None),
+    ("flervalg", "Hvilke tall er med i mengden {partall mellom 1 og 10}?",
+     "2, 4, 6, 8", ["1, 3, 5, 7", "2, 4, 6, 8, 10", "0, 2, 4, 6"]),
+    ("tekst", "⚽ Et lag trenger minst 11 spillere. Laget har 13. Er dette nok? Skriv ja eller nei.",
+     "ja", None),
+    ("flervalg", "Hva er |−5| · |−4|?",
+     "20", ["−20", "9", "1"]),
+    ("tekst", "🔢 A = {1,2,3,4,5,6}. Er 7 ∈ A? Skriv ja eller nei.",
+     "nei", None),
+    ("flervalg", "Hva betyr x ≠ 0?",
+     "x er ikke null", ["x er null", "x er negativ", "x er positiv"]),
+    ("skriv",    "Hva er |−6| − |−2|?",                               "4", None),
+    ("finn_feilen",
+     "🔍 Noen regnet |−4 + 9|. Finn feilen!",
+     "2",
+     ["Regner inni absoluttverdien: −4 + 9",
+      "Svaret er: −4 + 9 = −5  ← FEIL (skal være +5)",
+      "Absoluttverdien: |5| = 5"]),
+    ("tekst", "💰 Du har 200 kr. Bruker 80 kr. Har du mer enn 100 kr igjen? Skriv ja eller nei.",
+     "ja", None),
+]
+
+
+@app.route('/oppgaver/Tall og symboler/nivaa2', methods=['GET', 'POST'])
+@login_required
+def tall_symboler_nivaa2_route():
+    return kjor_sette_inn(
+        tall_symboler_nivaa2_oppgaver, 44000,
+        "tall_symboler_nivaa2.html",
+        "/oppgaver/Tall og symboler/nivaa2"
+    )
+
+
+# NIVÅ 3 – symboler i sammensatte oppgaver og hverdagssituasjoner (ID 45001–45030)
+tall_symboler_nivaa3_oppgaver = [
+    ("tekst", "🏦 Du setter inn 1000 kr i banken. Etter ett år har du 1050 kr. Hva er økningen i kr?",
+     "50", None),
+    ("flervalg", "Hva er |−8| + |−8|?",
+     "16", ["0", "−16", "64"]),
+    ("tekst", "🌡️ Temperaturforskjell: Oslo −5°C, Madrid 25°C. Hva er absolutt differanse?",
+     "30", None),
+    ("flervalg", "A = {2, 4, 6, 8} og B = {4, 8, 12}. Hvilke tall er i BEGGE mengdene?",
+     "4 og 8", ["2 og 4", "6 og 8", "8 og 12"]),
+    ("tekst", "🎯 Løs: 2x + 4 > 10. Hva er minste hele tall x kan være?",
+     "4", None),
+    ("finn_feilen",
+     "🔍 Noen fant felles elementer i A={2,4,6} og B={1,2,3,4}. Finn feilen!",
+     "2",
+     ["Ser på A: {2, 4, 6}",
+      "Felles elementer er {2, 4, 6}  ← FEIL (6 er ikke i B!)",
+      "Riktig svar er {2, 4}"]),
+    ("flervalg", "Hva er |3² − 4²|?",
+     "7", ["1", "25", "−7"]),
+    ("tekst", "📐 Arealet av et kvadrat er A = s². Er A > 0 alltid sant når s > 0? Skriv ja eller nei.",
+     "ja", None),
+    ("matching",
+     "Match hvert uttrykk med riktig verdi",
+     "riktig",
+     [("|−10|", "10"), ("|3 − 7|", "4"), ("|−5| + |−5|", "10"), ("|2² − 5|", "1")]),
+    ("flervalg", "Mengden A = {oddetall under 10}. Hva er A?",
+     "{1, 3, 5, 7, 9}", ["{1, 3, 5, 7}", "{3, 5, 7, 9}", "{0, 2, 4, 6, 8}"]),
+    ("tekst", "🚗 En bil bruker mer enn 5 liter per mil. Kjøreturen er 3 mil. Bruker bilen mer enn 15 liter? Skriv ja eller nei.",
+     "ja", None),
+    ("flervalg", "Hva er ∑ av de 5 første naturlige tallene {1,2,3,4,5}?",
+     "15", ["10", "20", "25"]),
+    ("steg",
+     "📝 Finn absoluttverdien av −3 + (−7) + 4 steg for steg",
+     "alle",
+     [("Steg 1: Regn ut inni: −3 + (−7) + 4", "-6"),
+      ("Steg 2: Ta absoluttverdien av svaret", "6"),
+      ("Steg 3: Er svaret positivt eller negativt? Skriv positivt eller negativt", "positivt")]),
+    ("tekst", "💡 En lampe tåler maks 60 watt. Du setter inn en 75 watt pære. Er dette for mye? Skriv ja eller nei.",
+     "ja", None),
+    ("flervalg", "Hva er |−100| : |−4|?",
+     "25", ["−25", "400", "96"]),
+    ("tekst", "🎲 Du kaster en terning 60 ganger. Du forventer ≈ 10 seksere. Stemmer dette med P(6) = 1/6 · 60?",
+     "ja", None),
+    ("finn_feilen",
+     "🔍 Noen løste 5x − 10 > 20. Finn feilen!",
+     "2",
+     ["Legger til 10: 5x > 30",
+      "Deler på 5: x > 3  ← FEIL (skal være x > 6)",
+      "Konklusjon: x > 3"]),
+    ("flervalg", "A = {1,2,3,4,5} og B = {4,5,6,7}. Hva er alle elementer som er i A eller B?",
+     "{1,2,3,4,5,6,7}", ["{4,5}", "{1,2,3}", "{6,7}"]),
+    ("tekst", "🏃 Lena løper mer enn 5 km per dag. På 7 dager løper hun mer enn ____ km?",
+     "35", None),
+    ("flervalg", "Hva er |−2³|?",
+     "8", ["−8", "6", "3"]),
+    ("tekst", "📊 En klasse tar prøve. Gjennomsnittet er ≈ 4,2 av 6. Hva er det nærmeste hele tallet?",
+     "4", None),
+    ("flervalg", "Hva er ∑ av {5, 10, 15, 20, 25}?",
+     "75", ["55", "100", "65"]),
+    ("tekst", "🌍 Havet stiger ≈ 3 mm per år. Hvor mye stiger det på 10 år (omtrent)?",
+     "30", None),
+    ("flervalg", "Er −5 ∈ {negative heltall}?",
+     "Ja", ["Nei", "Kanskje", "Vet ikke"]),
+    ("tekst", "💰 En vare koster 299 kr. Du har 300 kr. Har du nok? Skriv ja eller nei.",
+     "ja", None),
+    ("matching",
+     "Match talltypen med eksempel",
+     "riktig",
+     [("Negativt tall", "−7"), ("Desimaltall", "3,14"), ("Naturlig tall", "5"), ("Null", "0")]),
+    ("finn_feilen",
+     "🔍 Noen regnet ∑ av {3, 5, 7, 9}. Finn feilen!",
+     "2",
+     ["Legger sammen: 3 + 5 = 8",
+      "Legger til 7: 8 + 7 = 16  (men sa 14)  ← FEIL (8+7=15, ikke 14!)",
+      "Legger til 9: 15 + 9 = 24"]),
+    ("skriv",    "Hva er |−4| · 3 − |−2|?",                           "10", None),
+    ("tekst", "🎯 x er et heltall og x² < 10. Hva er det største positive x kan være?",
+     "3", None),
+    ("flervalg", "Er påstanden '|x| er alltid positiv eller null' sann?",
+     "Ja, alltid", ["Nei, kan være negativ", "Bare for positive x", "Bare for x = 0"]),
+]
+
+
+@app.route('/oppgaver/Tall og symboler/nivaa3', methods=['GET', 'POST'])
+@login_required
+def tall_symboler_nivaa3_route():
+    return kjor_sette_inn(
+        tall_symboler_nivaa3_oppgaver, 45000,
+        "tall_symboler_nivaa3.html",
+        "/oppgaver/Tall og symboler/nivaa3"
+    )
+
+
 # START SERVER
 if __name__ == '__main__':
     app.run(debug=True)
