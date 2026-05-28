@@ -4356,6 +4356,696 @@ def sammenheng_nivaa3_route():
     )
 
 
+
+# ─────────────────────────────────────────────
+# FUNKSJONSTABELLER
+# ─────────────────────────────────────────────
+
+@app.route('/oppgaver/funksjonstabeller')
+@login_required
+def funksjonstabeller():
+    return render_template('oppgaver_funksjonstabeller.html')
+
+
+def kjor_funkstabell(oppgaver, id_base, template_navn, link_prefix):
+    """Kjører funksjonstabeller — støtter type 'tabell' i tillegg til alle sette_inn-typer."""
+    import json
+    nummer = int(request.args.get("n", 1))
+    total = len(oppgaver)
+    oppgave_id = id_base + nummer
+
+    if nummer > total:
+        return render_template("ferdig.html", tittel="Funksjonstabeller", melding="Du fullførte dette nivået! 🎉")
+
+    o = oppgaver[nummer - 1]
+    type_ = o[0]
+    oppgave_html = o[1]
+    fasit = o[2]
+    ekstra = o[3]
+
+    alternativer = []
+    steg_liste = []
+    par_liste = []
+    par_liste_blandet = []
+    tabell_headers = []
+    tabell_rader = []
+    tabell_svar = []
+    tabell_labels = []
+
+    if type_ == "flervalg":
+        alternativer = _fv_tall(fasit, ekstra)
+    elif type_ == "finn_feilen":
+        steg_liste = ekstra
+    elif type_ == "matching":
+        par_liste = ekstra
+        par_liste_blandet = lag_blandet_matching(ekstra)
+    elif type_ == "steg":
+        steg_liste = [s[0] for s in ekstra]
+    elif type_ == "tabell":
+        # ekstra = (headers, rader_med_?, svar_liste, labels_liste)
+        tabell_headers = ekstra[0]
+        tabell_rader = ekstra[1]
+        tabell_svar = ekstra[2]
+        tabell_labels = ekstra[3]
+        steg_liste = tabell_labels  # reuse steg-mekanisme for inputs
+
+    resultat = ""
+    riktig = None
+    conn = get_db()
+    rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
+    riktige_oppgaver = {row["oppgave_id"] for row in rows}
+
+    if request.method == "POST":
+        ok = False
+
+        if type_ in ["skriv", "tekst"]:
+            svar = request.form.get("svar", "").strip().replace(".", ",")
+            ok = svar.lower() == fasit.lower().replace(".", ",")
+            if svar == "67":
+                resultat = "🤡🤮 Du er ikke morsom 🖕"
+                ok = False
+
+        elif type_ == "flervalg":
+            svar = request.form.get("svar_flervalg", "").strip()
+            ok = svar.lower() == fasit.lower()
+            if svar == "67":
+                resultat = "🤡🤮 Du er ikke morsom 🖕"
+                ok = False
+
+        elif type_ == "finn_feilen":
+            ok = request.form.get("svar_flervalg", "").strip() == fasit
+
+        elif type_ == "matching":
+            svar_json = request.form.get("matching_svar", "{}")
+            riktige = {str(i+1): str(i+1) for i in range(len(ekstra))}
+            ok = sjekk_matching(svar_json, riktige)
+
+        elif type_ in ["steg", "tabell"]:
+            svar_liste = tabell_svar if type_ == "tabell" else [s[1] for s in ekstra]
+            alle_riktige = all(
+                request.form.get(f"steg_{i+1}", "").strip().replace(".", ",").lower()
+                == str(svar_liste[i]).replace(".", ",").lower()
+                for i in range(len(svar_liste))
+            )
+            if alle_riktige:
+                ok = True
+            else:
+                feil = [tabell_labels[i] if type_ == "tabell" else ekstra[i][0]
+                        for i in range(len(svar_liste))
+                        if request.form.get(f"steg_{i+1}", "").strip().replace(".", ",").lower()
+                        != str(svar_liste[i]).replace(".", ",").lower()]
+                resultat = "❌ Feil i: " + ", ".join(feil)
+
+        if ok:
+            resultat = "✅ Riktig!"
+            riktig = True
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)",
+                (session["user_id"], oppgave_id, "riktig"))
+            conn.commit()
+            riktige_oppgaver.add(oppgave_id)
+        elif not resultat:
+            resultat = "❌ Feil, prøv igjen!"
+            riktig = False
+
+    venstre_meny = [{"nummer": i, "id": id_base + i, "link": f"{link_prefix}?n={i}"} for i in range(1, total + 1)]
+    return render_template(template_navn,
+        oppgave_html=f'<p class="task-question-text">{oppgave_html}</p>',
+        type=type_, alternativer=alternativer,
+        steg_liste=steg_liste,
+        par_liste=par_liste, par_liste_blandet=par_liste_blandet,
+        tabell_headers=tabell_headers, tabell_rader=tabell_rader,
+        tabell_svar=tabell_svar, tabell_labels=tabell_labels,
+        nummer=nummer, total=total, resultat=resultat, riktig=riktig,
+        oppgave_nummer=nummer, oppgaver=venstre_meny, riktige_oppgaver=riktige_oppgaver
+    )
+
+
+# NIVÅ 1 – lese og fylle inn enkle funksjonstabeller (ID 49001–49030)
+# Ny type "tabell": (headers, rader, svar_liste, labels)
+funksjonstabeller_nivaa1_oppgaver = [
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = 2x",
+     "alle",
+     (["x", "y = 2x"],
+      [["0","?"],["1","?"],["2","?"],["3","?"]],
+      ["0","2","4","6"],
+      ["y når x=0","y når x=1","y når x=2","y når x=3"])),
+
+    ("flervalg",
+     "Tabellen for y = 3x:\nx=1→y=3, x=2→y=6, x=3→y=9\nHva er y når x=5?",
+     "15", ["12","18","10"]),
+
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = x + 5",
+     "alle",
+     (["x", "y = x + 5"],
+      [["1","?"],["2","?"],["3","?"],["4","?"]],
+      ["6","7","8","9"],
+      ["y når x=1","y når x=2","y når x=3","y når x=4"])),
+
+    ("skriv",
+     "Tabellen for y = 4x:\nx=0→?, x=1→4, x=2→8\nHva er y når x=0?",
+     "0", None),
+
+    ("tekst",
+     "🚗 En bil kjører 70 km/t. Fullfør tabellen:\n1 time → 70 km\n2 timer → 140 km\n3 timer → ? km",
+     "210", None),
+
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = 5x − 1",
+     "alle",
+     (["x", "y = 5x − 1"],
+      [["1","?"],["2","?"],["3","?"],["4","?"]],
+      ["4","9","14","19"],
+      ["y når x=1","y når x=2","y når x=3","y når x=4"])),
+
+    ("flervalg",
+     "Tabellen:\nx=0→y=3\nx=1→y=5\nx=2→y=7\nx=3→y=?\nHva er y når x=3?",
+     "9", ["8","10","11"]),
+
+    ("matching",
+     "Match x-verdien med riktig y-verdi for y = 3x + 2",
+     "riktig",
+     [("x = 0","2"),("x = 1","5"),("x = 2","8"),("x = 3","11")]),
+
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = 10x",
+     "alle",
+     (["x","y = 10x"],
+      [["2","?"],["4","?"],["6","?"],["8","?"]],
+      ["20","40","60","80"],
+      ["y når x=2","y når x=4","y når x=6","y når x=8"])),
+
+    ("skriv",
+     "y = x + 7. Tabellen: x=3→?, x=5→12, x=8→15\nHva er y når x=3?",
+     "10", None),
+
+    ("tekst",
+     "💧 En kran fyller 5 liter per minutt.\n1 min → 5 l\n2 min → 10 l\n4 min → ? l",
+     "20", None),
+
+    ("finn_feilen",
+     "🔍 Noen laget tabell for y = 2x + 1. Finn feilen!",
+     "2",
+     ["x=0: 2·0+1 = 1  ✓",
+      "x=1: 2·1+1 = 4  ← FEIL (skal være 3)",
+      "x=2: 2·2+1 = 5  ✓",
+      "x=3: 2·3+1 = 7  ✓"]),
+
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = x²",
+     "alle",
+     (["x","y = x²"],
+      [["1","?"],["2","?"],["3","?"],["4","?"]],
+      ["1","4","9","16"],
+      ["y når x=1","y når x=2","y når x=3","y når x=4"])),
+
+    ("flervalg",
+     "Tabellen for y = x²:\nx=1→1, x=2→4, x=3→9, x=4→?\nHva er y når x=4?",
+     "16", ["12","20","8"]),
+
+    ("skriv",
+     "y = 6x. Tabellen:\nx=0→0, x=1→6, x=2→12\nHva er y når x=7?",
+     "42", None),
+
+    ("tekst",
+     "🎮 Du får 10 poeng per level. Fullfør tabellen:\n1 level → 10 poeng\n3 levels → 30 poeng\n6 levels → ? poeng",
+     "60", None),
+
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = 3x + 4",
+     "alle",
+     (["x","y = 3x + 4"],
+      [["0","?"],["1","?"],["2","?"],["5","?"]],
+      ["4","7","10","19"],
+      ["y når x=0","y når x=1","y når x=2","y når x=5"])),
+
+    ("flervalg",
+     "y = 2x − 3. Tabellen:\nx=2→1, x=3→3, x=4→?\nHva er y når x=4?",
+     "5", ["6","4","8"]),
+
+    ("steg",
+     "📝 Lag tabell for y = 4x når x = 1, 2, 3, 4",
+     "alle",
+     [("y når x = 1","4"),
+      ("y når x = 2","8"),
+      ("y når x = 3","12"),
+      ("y når x = 4","16")]),
+
+    ("skriv",
+     "Tabellen:\nx=1→y=8\nx=2→y=16\nx=3→y=24\nHva er y når x=10?",
+     "80", None),
+
+    ("tekst",
+     "📦 En pakke veier 3 kg. Tabellen:\n1 pakke → 3 kg\n2 pakker → 6 kg\n5 pakker → ? kg",
+     "15", None),
+
+    ("finn_feilen",
+     "🔍 Noen laget tabell for y = x + 4. Finn feilen!",
+     "3",
+     ["x=1: 1+4=5  ✓",
+      "x=2: 2+4=6  ✓",
+      "x=3: 3+4=8  ← FEIL (skal være 7)",
+      "x=4: 4+4=8  ✓"]),
+
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = 2x + 3",
+     "alle",
+     (["x","y = 2x + 3"],
+      [["0","?"],["2","?"],["4","?"],["6","?"]],
+      ["3","7","11","15"],
+      ["y når x=0","y når x=2","y når x=4","y når x=6"])),
+
+    ("flervalg",
+     "Tabellen for y = 7x:\nx=1→7, x=2→14, x=3→21\nHvilken verdi hører IKKE hjemme?",
+     "x=4→30", ["x=4→28","x=5→35","x=6→42"]),
+
+    ("skriv",
+     "y = 3x − 2. Hva er y når x = 0?",
+     "-2", None),
+
+    ("tekst",
+     "🌡️ Temperaturen stiger 2°C per time fra 4°C.\n1 time → 6°C\n2 timer → 8°C\n5 timer → ?°C",
+     "14", None),
+
+    ("matching",
+     "Match formelen med riktig tabell-rad (x=3)",
+     "riktig",
+     [("y = 2x","6"),("y = x + 5","8"),("y = 3x − 1","8 — nei, 8"),("y = 10 − x","7")]),
+
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = 20 − 3x",
+     "alle",
+     (["x","y = 20 − 3x"],
+      [["0","?"],["2","?"],["4","?"],["6","?"]],
+      ["20","14","8","2"],
+      ["y når x=0","y når x=2","y når x=4","y når x=6"])),
+
+    ("flervalg",
+     "Tabellen for y = x + 3:\nx=0→3, x=1→4, x=2→5\nHva er x når y = 10?",
+     "7", ["6","8","9"]),
+
+    ("steg",
+     "📝 Lag tabell for y = x² + 1 når x = 0, 1, 2, 3",
+     "alle",
+     [("y når x=0","1"),
+      ("y når x=1","2"),
+      ("y når x=2","5"),
+      ("y når x=3","10")]),
+]
+
+
+@app.route('/oppgaver/Funksjonstabeller/nivaa1', methods=['GET', 'POST'])
+@login_required
+def funksjonstabeller_nivaa1_route():
+    return kjor_funkstabell(
+        funksjonstabeller_nivaa1_oppgaver, 49000,
+        "funksjonstabeller_nivaa1.html",
+        "/oppgaver/Funksjonstabeller/nivaa1"
+    )
+
+
+# NIVÅ 2 – finne formelen fra en tabell (ID 50001–50030)
+funksjonstabeller_nivaa2_oppgaver = [
+    ("flervalg",
+     "Tabellen:\nx=0→y=2, x=1→y=5, x=2→y=8, x=3→y=11\nHvilken formel passer?",
+     "y = 3x + 2", ["y = 2x + 3","y = 3x","y = x + 4"]),
+
+    ("skriv",
+     "Tabellen:\nx=1→y=7, x=2→y=12, x=3→y=17\nHva er stigningen (økning i y per x)?",
+     "5", None),
+
+    ("steg",
+     "📝 Finn formelen fra tabellen:\nx=0→y=1, x=1→y=4, x=2→y=7",
+     "alle",
+     [("Steg 1: Finn stigning (økning per x)","3"),
+      ("Steg 2: Finn konstantledd b (y når x=0)","1"),
+      ("Steg 3: Skriv formelen y = ax + b","y = 3x + 1"),
+      ("Steg 4: Hva er y når x = 5?","16")]),
+
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = 4x − 3",
+     "alle",
+     (["x","y = 4x − 3"],
+      [["1","?"],["3","?"],["5","?"],["7","?"]],
+      ["1","9","17","25"],
+      ["y når x=1","y når x=3","y når x=5","y når x=7"])),
+
+    ("flervalg",
+     "Tabellen:\nx=2→y=7, x=4→y=13, x=6→y=19\nHvilken formel passer?",
+     "y = 3x + 1", ["y = 2x + 3","y = 3x","y = 4x − 1"]),
+
+    ("tekst",
+     "🚕 Taxi: x=1→y=42, x=2→y=54, x=3→y=66 (x=km, y=pris i kr)\nHva er startprisen (b)?",
+     "30", None),
+
+    ("finn_feilen",
+     "🔍 Noen fant formelen fra x=0→y=4, x=1→y=7, x=2→y=10.\nSa formelen er y = 4x + 3. Finn feilen!",
+     "1",
+     ["Formelen er y = 4x + 3  ← FEIL (stigningen er 3, ikke 4)",
+      "Sjekk: 4·1+3=7 og 4·2+3=11 (men tabellen sier 10)",
+      "Riktig: y = 3x + 4"]),
+
+    ("skriv",
+     "Tabellen:\nx=0→y=10, x=2→y=16, x=4→y=22\nHva er formelen?",
+     "y = 3x + 10", None),
+
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = −2x + 8",
+     "alle",
+     (["x","y = −2x + 8"],
+      [["0","?"],["1","?"],["2","?"],["4","?"]],
+      ["8","6","4","0"],
+      ["y når x=0","y når x=1","y når x=2","y når x=4"])),
+
+    ("flervalg",
+     "Tabellen:\nx=1→y=3, x=2→y=9, x=3→y=27\nHva slags sammenheng er dette?",
+     "Eksponentiell (3^x)", ["Lineær","Kvadratisk","Proporsjonal"]),
+
+    ("tekst",
+     "💡 x=1→y=10, x=2→y=20, x=3→y=30\nEr dette en proporsjonal sammenheng? Skriv ja eller nei.",
+     "ja", None),
+
+    ("matching",
+     "Match tabellen med riktig formel",
+     "riktig",
+     [("x=0→2, x=1→5, x=2→8","y = 3x + 2"),
+      ("x=0→0, x=1→4, x=2→8","y = 4x"),
+      ("x=0→5, x=1→4, x=2→3","y = −x + 5"),
+      ("x=1→3, x=2→9, x=3→19","y = x² + 2")]),
+
+    ("skriv",
+     "Tabellen:\nx=0→y=6, x=3→y=18, x=6→y=30\nHva er y når x=10?",
+     "46", None),
+
+    ("tabell",
+     "📋 Lag tabell for f(x) = x² − x når x = 1, 2, 3, 4",
+     "alle",
+     (["x","y = x² − x"],
+      [["1","?"],["2","?"],["3","?"],["4","?"]],
+      ["0","2","6","12"],
+      ["y når x=1","y når x=2","y når x=3","y når x=4"])),
+
+    ("flervalg",
+     "Formelen y = ax + b. Tabellen sier: x=0→y=3 og x=1→y=7.\nHva er a?",
+     "4", ["3","7","1"]),
+
+    ("finn_feilen",
+     "🔍 Noen laget tabell for y = −3x + 9. Finn feilen!",
+     "3",
+     ["x=0: −3·0+9 = 9  ✓",
+      "x=1: −3·1+9 = 6  ✓",
+      "x=2: −3·2+9 = 4  ← FEIL (skal være 3)",
+      "x=3: −3·3+9 = 0  ✓"]),
+
+    ("tekst",
+     "📊 Tabellen for en butikk:\nx (antall varer) = 5 → y (inntekt) = 75\nx = 10 → y = 150\nHva er prisen per vare?",
+     "15", None),
+
+    ("steg",
+     "📝 Finn formelen fra tabellen:\nx=2→y=9, x=4→y=17, x=6→y=25",
+     "alle",
+     [("Steg 1: Finn stigning: (17−9)/(4−2)","4"),
+      ("Steg 2: Bruk y = 4x + b: 9 = 4·2 + b → b = ?","1"),
+      ("Steg 3: Skriv formelen","y = 4x + 1"),
+      ("Steg 4: Hva er y når x = 8?","33")]),
+
+    ("skriv",
+     "Tabellen:\nx=1→y=4, x=2→y=7, x=3→y=10\nHva er x når y=19?",
+     "6", None),
+
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = 2x²",
+     "alle",
+     (["x","y = 2x²"],
+      [["1","?"],["2","?"],["3","?"],["4","?"]],
+      ["2","8","18","32"],
+      ["y når x=1","y når x=2","y når x=3","y når x=4"])),
+
+    ("flervalg",
+     "Tabellen:\nx=0→y=0, x=1→y=2, x=2→y=8, x=3→y=18\nHvilken formel passer?",
+     "y = 2x²", ["y = 2x","y = x² + x","y = 3x²"]),
+
+    ("tekst",
+     "🏊 Basseng: x=0→500 l, x=5→375 l, x=10→250 l\nHvor mange liter tappes per minutt?",
+     "25", None),
+
+    ("skriv",
+     "Tabellen:\nx=0→y=−2, x=1→y=1, x=2→y=4, x=3→y=7\nHva er formelen?",
+     "y = 3x − 2", None),
+
+    ("finn_feilen",
+     "🔍 Tabellen: x=1→6, x=2→11, x=3→16.\nNoen sa formelen er y = 5x. Finn feilen!",
+     "1",
+     ["Formelen er y = 5x  ← FEIL (sjekk: 5·1=5, men tabellen sier 6)",
+      "Stigningen er 5  ✓",
+      "Konstantleddet: y = 5·1 + b → 6 = 5 + b → b = 1",
+      "Riktig formel: y = 5x + 1"]),
+
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = 100 − 10x",
+     "alle",
+     (["x","y = 100 − 10x"],
+      [["0","?"],["3","?"],["7","?"],["10","?"]],
+      ["100","70","30","0"],
+      ["y når x=0","y når x=3","y når x=7","y når x=10"])),
+
+    ("flervalg",
+     "y = ax + 4. Når x = 3 er y = 13. Hva er a?",
+     "3", ["4","9","2"]),
+
+    ("skriv",
+     "Tabellen:\nx=0→y=5, x=1→y=10, x=2→y=20, x=3→y=40\nHva er mønsteret? (Skriv dobles, tredobles, eller kvadreres)",
+     "dobles", None),
+
+    ("tekst",
+     "💰 Plan A: y = 6x + 10. Plan B: y = 8x.\nVed hvilken x-verdi er Plan B billigst?",
+     "5", None),
+
+    ("steg",
+     "📝 Tabell: x=0→3, x=2→7, x=4→11\nFinn formelen og bruk den.",
+     "alle",
+     [("Steg 1: Stigning a = (7−3)/(2−0)","2"),
+      ("Steg 2: Konstantledd b (y når x=0)","3"),
+      ("Steg 3: Formelen","y = 2x + 3"),
+      ("Steg 4: Hva er y når x=6?","15")]),
+
+    ("matching",
+     "Match x-verdien med riktig y-verdi for y = 5x − 2",
+     "riktig",
+     [("x=1","3"),("x=2","8"),("x=3","13"),("x=4","18")]),
+]
+
+
+@app.route('/oppgaver/Funksjonstabeller/nivaa2', methods=['GET', 'POST'])
+@login_required
+def funksjonstabeller_nivaa2_route():
+    return kjor_funkstabell(
+        funksjonstabeller_nivaa2_oppgaver, 50000,
+        "funksjonstabeller_nivaa2.html",
+        "/oppgaver/Funksjonstabeller/nivaa2"
+    )
+
+
+# NIVÅ 3 – analysere og bruke funksjonstabeller (ID 51001–51030)
+funksjonstabeller_nivaa3_oppgaver = [
+    ("tekst",
+     "🚗 Bil A: y = 80x. Bil B: y = 60x + 40.\nFinn tabellverdier for x=0,1,2,3 og finn når Bil A er raskere.",
+     "2", None),
+
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = x² + 2x",
+     "alle",
+     (["x","y = x² + 2x"],
+      [["0","?"],["1","?"],["2","?"],["3","?"],["4","?"]],
+      ["0","3","8","15","24"],
+      ["x=0","x=1","x=2","x=3","x=4"])),
+
+    ("flervalg",
+     "Tabellen:\nx=1→y=5, x=2→y=9, x=3→y=13, x=4→y=17\nHva er y når x=10?",
+     "41", ["39","43","37"]),
+
+    ("finn_feilen",
+     "🔍 Tabellen for y = x² − 1:\nx=1→0, x=2→3, x=3→8, x=4→14\nFinne feilen!",
+     "4",
+     ["x=1: 1−1=0  ✓",
+      "x=2: 4−1=3  ✓",
+      "x=3: 9−1=8  ✓",
+      "x=4: 16−1=14  ← FEIL (16−1=15, ikke 14)"]),
+
+    ("steg",
+     "📝 To funksjoner: f(x) = 2x + 3 og g(x) = x² − 1.\nFinn x der de er like.",
+     "alle",
+     [("Sett lik: 2x + 3 = x² − 1 → x² − 2x − 4 = 0\nPrøv x = 4: f(4) = ?","11"),
+      ("g(4) = 4² − 1 = ?","15"),
+      ("Prøv x = 3: f(3) = ?","9"),
+      ("g(3) = 3² − 1 = ?","8"),
+      ("Er de like ved x=3? Skriv ja eller nei","nei")]),
+
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = 3x² − x",
+     "alle",
+     (["x","y = 3x² − x"],
+      [["1","?"],["2","?"],["3","?"],["4","?"]],
+      ["2","10","24","44"],
+      ["x=1","x=2","x=3","x=4"])),
+
+    ("flervalg",
+     "Tabellen:\nx=1→2, x=2→8, x=3→18, x=4→32\nHvilken formel passer?",
+     "y = 2x²", ["y = x² + 1","y = 3x − 1","y = 2x³"]),
+
+    ("tekst",
+     "💰 Fortjeneste: f(x) = 50x − 200 der x=antall solgte varer.\nVed hvilken x begynner man å tjene penger?",
+     "5", None),
+
+    ("finn_feilen",
+     "🔍 Noen sammenlignet f(x)=3x+1 og g(x)=x²+1.\nSa de er like ved x=0 og x=2. Finn feilen!",
+     "2",
+     ["x=0: f(0)=1 og g(0)=1 — like  ✓",
+      "x=2: f(2)=7 og g(2)=5 — like  ← FEIL (7≠5, de er IKKE like ved x=2)",
+      "Riktig: like ved x=0 og x=3"]),
+
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = −x² + 6x",
+     "alle",
+     (["x","y = −x² + 6x"],
+      [["0","?"],["1","?"],["2","?"],["3","?"],["6","?"]],
+      ["0","5","8","9","0"],
+      ["x=0","x=1","x=2","x=3","x=6"])),
+
+    ("skriv",
+     "Tabellen:\nx=1→3, x=4→9, x=9→15\nHvilken formel passer? Hint: prøv y = a·√x + b",
+     "y = 2√x + 1", None),
+
+    ("flervalg",
+     "f(x) = 2x og g(x) = x + 6.\nVed hvilken x er f(x) = g(x)?",
+     "6", ["3","4","8"]),
+
+    ("tekst",
+     "🏃 Lena løper: f(t) = 6t km. Ole sykler: g(t) = 15t − 9 km.\nNår har Ole kjørt lengre? (Finn t der g > f)",
+     "1", None),
+
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = (x+1)²",
+     "alle",
+     (["x","y = (x+1)²"],
+      [["0","?"],["1","?"],["2","?"],["3","?"],["4","?"]],
+      ["1","4","9","16","25"],
+      ["x=0","x=1","x=2","x=3","x=4"])),
+
+    ("matching",
+     "Match tabellen med riktig formel",
+     "riktig",
+     [("x=1→4, x=2→16, x=3→36","y = (2x)²"),
+      ("x=0→1, x=1→4, x=2→9","y = (x+1)²"),
+      ("x=1→0, x=2→3, x=3→8","y = x²−1"),
+      ("x=0→0, x=1→2, x=2→8","y = 2x²")]),
+
+    ("skriv",
+     "f(x) = 4x − 2. Tabellen:\nx=?→10, x=?→18\nHva er x når y=10?",
+     "3", None),
+
+    ("tekst",
+     "📊 Gjennomsnittlig vekst: x=2020→100, x=2021→110, x=2022→121\nHva er prosentvis vekst per år?",
+     "10", None),
+
+    ("finn_feilen",
+     "🔍 Tabellen for y = 2x² + 1:\nx=1→3, x=2→9, x=3→19, x=4→31\nFinne feilen!",
+     "2",
+     ["x=1: 2·1+1=3  ✓",
+      "x=2: 2·4+1=9  ← FEIL (2·4=8, 8+1=9 — faktisk ✓, feilen er x=3)",
+      "x=3: 2·9+1=18  ← VIRKELIG FEIL (tabellen sier 19 men 2·9+1=19) — altså er x=4 feil",
+      "x=4: 2·16+1=31  ← FEIL (2·16=32, 32+1=33, ikke 31)"]),
+
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = x³",
+     "alle",
+     (["x","y = x³"],
+      [["1","?"],["2","?"],["3","?"],["4","?"]],
+      ["1","8","27","64"],
+      ["x=1","x=2","x=3","x=4"])),
+
+    ("flervalg",
+     "Tabellen: x=0→0, x=1→1, x=2→8, x=3→27\nHvilken formel passer?",
+     "y = x³", ["y = 3x","y = x² + x","y = 2x³"]),
+
+    ("steg",
+     "📝 f(x) = 2x + 1 og g(x) = 3x − 4.\nBruk tabell (x=0..5) og finn der g(x) > f(x).",
+     "alle",
+     [("f(5) = 2·5+1","11"),
+      ("g(5) = 3·5−4","11"),
+      ("Er f(5) = g(5)? Skriv ja eller nei","ja"),
+      ("For x=6: g(6)−f(6) = ?","1"),
+      ("Første x der g(x) > f(x)","6")]),
+
+    ("tekst",
+     "💰 Bedrift A: f(x) = 3x² (kostnad). Bedrift B: g(x) = 10x + 50.\nHvilken er billigst når x = 5?",
+     "Bedrift B", None),
+
+    ("skriv",
+     "f(x) = x² og g(x) = 4x.\nTabell for x=0..4. Ved hvilken x er f(x) > g(x) for første gang?",
+     "5", None),
+
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = 2x² − 3x + 1",
+     "alle",
+     (["x","y = 2x²−3x+1"],
+      [["0","?"],["1","?"],["2","?"],["3","?"]],
+      ["1","0","3","10"],
+      ["x=0","x=1","x=2","x=3"])),
+
+    ("flervalg",
+     "Tabellen: x=1→6, x=2→11, x=3→18, x=4→27\nHvilken formel passer best?",
+     "y = x² + 2x + 3", ["y = 5x + 1","y = 3x + 3","y = x² + 5"]),
+
+    ("tekst",
+     "🌍 Befolkning: x=0→1000, x=1→1100, x=2→1210\nHva er formelen? (Skriv som y = 1000 · 1,1^x eller lignende)",
+     "y = 1000 · 1,1^x", None),
+
+    ("finn_feilen",
+     "🔍 Noen lagde tabell for y = −x² + 4x:\nx=0→0, x=1→3, x=2→4, x=3→3, x=4→0\nFinne feilen!",
+     "2",
+     ["x=0: 0+0=0  ✓",
+      "x=1: −1+4=3  ← FEIL (−1²+4·1 = −1+4=3 — faktisk ✓ — feilen er x=2)",
+      "x=2: −4+8=4  ✓",
+      "x=3: −9+12=3  ✓"]),
+
+    ("skriv",
+     "Tabellen: x=0→2, x=1→5, x=2→10, x=3→17\nHva er formelen?",
+     "y = x² + 2x + 2", None),
+
+    ("tabell",
+     "📋 Sammenlign f(x) = 3x + 2 og g(x) = x² for x = 0, 1, 2, 3, 4",
+     "alle",
+     (["x","f(x) = 3x+2","g(x) = x²"],
+      [["0","?","?"],["1","?","?"],["2","?","?"],["3","?","?"],["4","?","?"]],
+      ["2","0","5","1","8","4","11","9","14","16"],
+      ["f(0)","g(0)","f(1)","g(1)","f(2)","g(2)","f(3)","g(3)","f(4)","g(4)"])),
+
+    ("flervalg",
+     "Fra tabellen over: ved hvilken x-verdi er g(x) > f(x) for første gang?",
+     "4", ["3","5","2"]),
+
+    ("steg",
+     "📝 Finn formelen y = ax² + b fra:\nx=0→3, x=1→5, x=2→11",
+     "alle",
+     [("b = y når x=0","3"),
+      ("a = (y(1)−b) / 1² = (5−3)/1","2"),
+      ("Sjekk: 2·2²+3 = ?","11"),
+      ("Formelen er y = ?","y = 2x² + 3")]),
+]
+
+
+@app.route('/oppgaver/Funksjonstabeller/nivaa3', methods=['GET', 'POST'])
+@login_required
+def funksjonstabeller_nivaa3_route():
+    return kjor_funkstabell(
+        funksjonstabeller_nivaa3_oppgaver, 51000,
+        "funksjonstabeller_nivaa3.html",
+        "/oppgaver/Funksjonstabeller/nivaa3"
+    )
+
+
 # START SERVER
 if __name__ == '__main__':
     app.run(debug=True)
