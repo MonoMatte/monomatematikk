@@ -1,0 +1,330 @@
+{% extends "base.html" %}
+{% block title %}Mot AI – Konkurransemodus{% endblock %}
+{% block body %}
+
+<div class="container py-4" style="max-width:720px;">
+
+    <!-- HEADER -->
+    <div class="pvp-game-header">
+        <div class="pvp-player pvp-player-you">
+            <div class="pvp-player-icon">🧑‍🎓</div>
+            <div class="pvp-player-name">Du</div>
+            <div class="pvp-score-val" id="scorePlayer">0</div>
+        </div>
+
+        <div class="pvp-middle">
+            <div class="pvp-round-label">Runde <span id="roundNum">1</span> / 10</div>
+            <div class="pvp-timer-ring">
+                <svg width="80" height="80" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="34" fill="none" stroke="#e0e0e0" stroke-width="6"/>
+                    <circle id="timerArc" cx="40" cy="40" r="34" fill="none" stroke="#0d6efd"
+                        stroke-width="6" stroke-linecap="round"
+                        stroke-dasharray="213.6" stroke-dashoffset="0"
+                        transform="rotate(-90 40 40)"/>
+                </svg>
+                <div class="pvp-timer-num" id="timerNum">30</div>
+            </div>
+            <div class="pvp-vs">VS</div>
+        </div>
+
+        <div class="pvp-player pvp-player-ai">
+            <div class="pvp-player-icon">🤖</div>
+            <div class="pvp-player-name">AI</div>
+            <div class="pvp-score-val" id="scoreAI">0</div>
+        </div>
+    </div>
+
+    <!-- OPPGAVE-KORT -->
+    <div class="pvp-question-card" id="questionCard">
+        <div class="pvp-question-text" id="questionText">Laster oppgave...</div>
+
+        <div class="pvp-status-row" id="statusRow" style="display:none;">
+            <span id="statusMsg"></span>
+        </div>
+
+        <div class="pvp-input-row" id="inputRow">
+            <input type="text" id="answerInput" class="pvp-answer-input" placeholder="Skriv svaret..." autocomplete="off">
+            <button id="submitBtn" class="pvp-submit-btn" onclick="sjekkSvar()">Svar ➤</button>
+        </div>
+
+        <div class="pvp-ai-thinking" id="aiThinking">
+            <span class="pvp-ai-dots">🤖 AI tenker<span id="dots"></span></span>
+        </div>
+    </div>
+
+    <!-- NESTE-KNAPP -->
+    <div class="text-center mt-3" id="nesteDiv" style="display:none;">
+        <button class="pvp-neste-btn" onclick="nesteRunde()">Neste runde →</button>
+    </div>
+
+    <!-- RESULTAT -->
+    <div class="pvp-result-screen" id="resultScreen" style="display:none;">
+        <div id="resultIcon" style="font-size:4rem;"></div>
+        <div id="resultTitle" style="font-size:2rem;font-weight:900;margin:12px 0;"></div>
+        <div id="resultSub" style="opacity:.7;margin-bottom:24px;"></div>
+        <div class="pvp-final-scores">
+            <div class="pvp-final-you">🧑‍🎓 Du: <strong id="finalPlayer">0</strong></div>
+            <div class="pvp-final-ai">🤖 AI: <strong id="finalAI">0</strong></div>
+        </div>
+        <a href="/pvp/mot-ai" class="pvp-neste-btn" style="margin-top:20px;display:inline-block;">Spill igjen 🔄</a>
+        <a href="/pvp" style="display:block;margin-top:12px;opacity:.5;font-size:.9rem;">← Velg modus</a>
+    </div>
+
+</div>
+
+<script>
+const TOTAL_ROUNDS = 10;
+const BASE_TIME = 30;
+const CIRCUMFERENCE = 213.6;
+
+let round = 0;
+let scorePlayer = 0;
+let scoreAI = 0;
+let currentAnswer = "";
+let timerVal = BASE_TIME;
+let timerInterval = null;
+let aiTimeout = null;
+let roundDone = false;
+let playerAnsweredAt = null;  // seconds remaining when player answered
+let aiAnsweredAt = null;
+
+// AI difficulty: seconds remaining when AI answers (random within range)
+function aiThinkTime() {
+    // Difficulty ramps up: rounds 1-3 = slow AI, 4-7 = medium, 8-10 = fast
+    if (round <= 3) return BASE_TIME - _rand(12, 22);   // answers at 8-18s remaining
+    if (round <= 7) return BASE_TIME - _rand(8, 18);    // answers at 12-22s remaining
+    return BASE_TIME - _rand(4, 12);                    // answers at 18-26s remaining
+}
+function _rand(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+
+async function hentOppgave() {
+    const res = await fetch('/pvp/ai-oppgave');
+    return await res.json();
+}
+
+async function startRunde() {
+    round++;
+    if (round > TOTAL_ROUNDS) { visResultat(); return; }
+
+    roundDone = false;
+    playerAnsweredAt = null;
+    aiAnsweredAt = null;
+
+    document.getElementById('roundNum').textContent = round;
+    document.getElementById('statusRow').style.display = 'none';
+    document.getElementById('nesteDiv').style.display = 'none';
+    document.getElementById('inputRow').style.display = 'flex';
+    document.getElementById('aiThinking').style.display = 'block';
+    document.getElementById('answerInput').value = '';
+    document.getElementById('answerInput').disabled = false;
+    document.getElementById('answerInput').className = 'pvp-answer-input';
+    document.getElementById('submitBtn').disabled = false;
+    document.getElementById('questionCard').style.display = 'block';
+    animateDots();
+
+    const oppgave = await hentOppgave();
+    currentAnswer = oppgave.a;
+    document.getElementById('questionText').textContent = oppgave.q;
+
+    startTimer();
+
+    // Schedule AI answer
+    const aiAt = aiThinkTime();
+    aiTimeout = setTimeout(() => {
+        if (!roundDone) aiSvarer(aiAt);
+    }, (BASE_TIME - aiAt) * 1000);
+}
+
+function startTimer() {
+    clearInterval(timerInterval);
+    timerVal = BASE_TIME;
+    updateTimerUI();
+
+    timerInterval = setInterval(() => {
+        timerVal--;
+        updateTimerUI();
+        if (timerVal <= 0) {
+            clearInterval(timerInterval);
+            if (!roundDone) ingenSvarte();
+        }
+    }, 1000);
+}
+
+function updateTimerUI() {
+    document.getElementById('timerNum').textContent = timerVal;
+    const pct = timerVal / BASE_TIME;
+    const offset = CIRCUMFERENCE * (1 - pct);
+    document.getElementById('timerArc').style.strokeDashoffset = offset;
+    const arc = document.getElementById('timerArc');
+    if (timerVal <= 10) arc.style.stroke = '#dc3545';
+    else if (timerVal <= 20) arc.style.stroke = '#fd7e14';
+    else arc.style.stroke = '#0d6efd';
+}
+
+function sjekkSvar() {
+    if (roundDone) return;
+    const svar = document.getElementById('answerInput').value.trim();
+    if (!svar) return;
+
+    const input = document.getElementById('answerInput');
+    const btn = document.getElementById('submitBtn');
+
+    if (svar.replace(',','.').toLowerCase() === currentAnswer.replace(',','.').toLowerCase()) {
+        playerAnsweredAt = timerVal;
+        input.disabled = true;
+        btn.disabled = true;
+        input.className = 'pvp-answer-input pvp-correct';
+
+        // If AI hasn't answered yet: cut timer to 10s max
+        if (aiAnsweredAt === null) {
+            if (timerVal > 10) {
+                timerVal = 10;
+                updateTimerUI();
+                clearTimeout(aiTimeout);
+                // Reschedule AI within remaining time
+                aiTimeout = setTimeout(() => {
+                    if (!roundDone) aiSvarer(Math.floor(Math.random() * 9) + 1);
+                }, (timerVal - 1) * 1000 + _rand(500, 2000));
+            }
+        } else {
+            // AI already answered – finish round
+            avsluttRunde();
+        }
+    } else {
+        input.className = 'pvp-answer-input pvp-wrong';
+        setTimeout(() => {
+            input.className = 'pvp-answer-input';
+            input.value = '';
+        }, 600);
+    }
+}
+
+function aiSvarer(atSeconds) {
+    aiAnsweredAt = atSeconds;
+    document.getElementById('aiThinking').style.display = 'none';
+
+    if (playerAnsweredAt !== null) {
+        // Both answered – finish
+        avsluttRunde();
+    } else {
+        // Player still thinking – show AI answered
+        const statusRow = document.getElementById('statusRow');
+        const statusMsg = document.getElementById('statusMsg');
+        statusRow.style.display = 'flex';
+        statusMsg.innerHTML = '🤖 AI svarte riktig! Du har <strong>' + timerVal + 's</strong> igjen...';
+        statusRow.className = 'pvp-status-row pvp-status-ai';
+
+        // Cut timer
+        if (timerVal > 10) timerVal = 10;
+    }
+}
+
+function avsluttRunde() {
+    if (roundDone) return;
+    roundDone = true;
+    clearInterval(timerInterval);
+    clearTimeout(aiTimeout);
+
+    document.getElementById('inputRow').style.display = 'none';
+    document.getElementById('aiThinking').style.display = 'none';
+
+    const statusRow = document.getElementById('statusRow');
+    const statusMsg = document.getElementById('statusMsg');
+    statusRow.style.display = 'flex';
+
+    let roundScorePlayer = 0;
+    let roundScoreAI = 0;
+
+    if (playerAnsweredAt !== null && aiAnsweredAt !== null) {
+        // Both correct
+        if (playerAnsweredAt >= aiAnsweredAt) {
+            // Player faster
+            roundScorePlayer = 100;
+            roundScoreAI = 40;
+            statusMsg.innerHTML = `✅ Du var raskere! +100 poeng (AI: +40)`;
+            statusRow.className = 'pvp-status-row pvp-status-win';
+        } else {
+            // AI faster
+            roundScorePlayer = 40;
+            roundScoreAI = 100;
+            statusMsg.innerHTML = `⚡ AI var raskere! +40 poeng (AI: +100)`;
+            statusRow.className = 'pvp-status-row pvp-status-lose';
+        }
+    } else if (playerAnsweredAt !== null) {
+        // Only player correct
+        roundScorePlayer = 100;
+        statusMsg.innerHTML = `✅ Riktig! AI klarte det ikke. +100 poeng!`;
+        statusRow.className = 'pvp-status-row pvp-status-win';
+    } else if (aiAnsweredAt !== null) {
+        // Only AI correct
+        roundScoreAI = 100;
+        statusMsg.innerHTML = `❌ AI fikk det til, du ikke. AI +100 poeng`;
+        statusRow.className = 'pvp-status-row pvp-status-lose';
+    } else {
+        statusMsg.innerHTML = `⏱️ Ingen svarte riktig denne runden!`;
+        statusRow.className = 'pvp-status-row pvp-status-draw';
+    }
+
+    scorePlayer += roundScorePlayer;
+    scoreAI += roundScoreAI;
+    document.getElementById('scorePlayer').textContent = scorePlayer;
+    document.getElementById('scoreAI').textContent = scoreAI;
+
+    document.getElementById('nesteDiv').style.display = 'block';
+}
+
+function ingenSvarte() {
+    aiAnsweredAt = null;
+    avsluttRunde();
+}
+
+function nesteRunde() {
+    if (round >= TOTAL_ROUNDS) { visResultat(); return; }
+    startRunde();
+}
+
+function visResultat() {
+    document.getElementById('questionCard').style.display = 'none';
+    document.getElementById('nesteDiv').style.display = 'none';
+    const screen = document.getElementById('resultScreen');
+    screen.style.display = 'block';
+
+    document.getElementById('finalPlayer').textContent = scorePlayer;
+    document.getElementById('finalAI').textContent = scoreAI;
+
+    if (scorePlayer > scoreAI) {
+        document.getElementById('resultIcon').textContent = '🏆';
+        document.getElementById('resultTitle').textContent = 'Du vant!';
+        document.getElementById('resultSub').textContent = `${scorePlayer} – ${scoreAI} poeng`;
+    } else if (scoreAI > scorePlayer) {
+        document.getElementById('resultIcon').textContent = '🤖';
+        document.getElementById('resultTitle').textContent = 'AI vant!';
+        document.getElementById('resultSub').textContent = `${scorePlayer} – ${scoreAI} poeng. Prøv igjen!`;
+    } else {
+        document.getElementById('resultIcon').textContent = '🤝';
+        document.getElementById('resultTitle').textContent = 'Uavgjort!';
+        document.getElementById('resultSub').textContent = `${scorePlayer} – ${scoreAI} poeng`;
+    }
+}
+
+function animateDots() {
+    let d = 0;
+    const dots = document.getElementById('dots');
+    setInterval(() => {
+        if (!document.getElementById('aiThinking').style.display || document.getElementById('aiThinking').style.display === 'block') {
+            dots.textContent = '.'.repeat((d % 3) + 1);
+            d++;
+        }
+    }, 400);
+}
+
+// Enter key support
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('answerInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') sjekkSvar();
+    });
+    startRunde();
+});
+</script>
+
+{% endblock %}
