@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Konkurransemodus{% endblock %}
+{% block body %}
+
+<div class="container py-5" style="max-width:700px;">
+    <div class="text-center mb-5">
+        <div style="font-size:3.5rem;">⚔️</div>
+        <h1 style="font-size:2.4rem;font-weight:900;">Konkurransemodus</h1>
+        <p style="opacity:.7;">Velg hvordan du vil konkurrere</p>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- MOT AI -->
+        <div class="col-12 col-md-4">
+            <a href="/pvp/mot-ai" class="pvp-mode-card">
+                <div class="pvp-mode-icon">🤖</div>
+                <div class="pvp-mode-title">Mot AI</div>
+                <div class="pvp-mode-desc">Spill mot datamaskinen. Perfekt for å øve!</div>
+            </a>
+        </div>
+
+        <!-- MED KLASSEN -->
+        <div class="col-12 col-md-4">
+            <a href="#" class="pvp-mode-card pvp-mode-soon">
+                <div class="pvp-mode-icon">🏫</div>
+                <div class="pvp-mode-title">Med klassen</div>
+                <div class="pvp-mode-desc">Kahoot-stil – læreren styrer spillet</div>
+                <span class="pvp-soon-badge">Kommer snart</span>
+            </a>
+        </div>
+
+        <!-- RANGERT -->
+        <div class="col-12 col-md-4">
+            <a href="#" class="pvp-mode-card pvp-mode-soon">
+                <div class="pvp-mode-icon">🏆</div>
+                <div class="pvp-mode-title">Rangert</div>
+                <div class="pvp-mode-desc">1v1 mot andre elever – ELO-rating</div>
+                <span class="pvp-soon-badge">Kommer snart</span>
+            </a>
+        </div>
+
+    </div>
+
+    <div class="text-center mt-5">
+        <a href="/" style="opacity:.5;font-size:.9rem;">← Tilbake til forsiden</a>
+    </div>
+</div>
+
+{% endblock %}
