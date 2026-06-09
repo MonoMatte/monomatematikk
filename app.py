@@ -325,6 +325,8 @@ def regnerekkefolge_nivaa1_route():
     oppgave, fasit = oppgaver[nummer - 1]
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -381,6 +383,8 @@ def regnerekkefolge_nivaa2_route():
     oppgave, fasit = oppgaver[nummer - 1]
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -442,6 +446,8 @@ def regnerekkefolge_nivaa3_route():
     oppgave, fasit = regnerekkefolge_nivaa3[nummer - 1]
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -514,6 +520,8 @@ def hele_tall_nivaa1_route():
     oppgave, fasit = oppgaver[nummer - 1]
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -572,6 +580,8 @@ def hele_tall_nivaa2_route():
     oppgave, fasit = oppgaver[nummer - 1]
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -630,6 +640,8 @@ def hele_tall_nivaa3_route():
     oppgave, fasit = oppgaver[nummer - 1]
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -698,6 +710,8 @@ def desimaltall_nivaa1_route():
     oppgave, fasit = oppgaver[nummer - 1]
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -755,6 +769,8 @@ def desimaltall_nivaa2_route():
     oppgave, fasit = oppgaver[nummer - 1]
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -817,6 +833,8 @@ def desimaltall_nivaa3_route():
     oppgave, fasit = oppgaver[nummer - 1]
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -889,6 +907,8 @@ def prosent_nivaa1_route():
     oppgave, fasit = oppgaver[nummer - 1]
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -951,6 +971,8 @@ def prosent_nivaa2_route():
     oppgave, fasit = oppgaver[nummer - 1]
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -1028,6 +1050,8 @@ def prosent_nivaa3_route():
     oppgave, fasit = oppgaver[nummer - 1]
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -1096,6 +1120,8 @@ def negative_tall_nivaa1_route():
     oppgave, fasit = oppgaver[nummer - 1]
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -1153,6 +1179,8 @@ def negative_tall_nivaa2_route():
     oppgave, fasit = oppgaver[nummer - 1]
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -1215,6 +1243,8 @@ def negative_tall_nivaa3_route():
     oppgave, fasit = oppgaver[nummer - 1]
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -1352,6 +1382,8 @@ def brok_nivaa1_route():
 
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -1445,6 +1477,8 @@ def brok_nivaa2_route():
 
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -1538,6 +1572,8 @@ def brok_nivaa3_route():
 
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -1654,6 +1690,8 @@ def potenser_nivaa1_route():
 
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -1736,6 +1774,8 @@ def potenser_nivaa2_route():
 
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -1818,6 +1858,8 @@ def potenser_nivaa3_route():
 
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -1911,6 +1953,8 @@ def overslag_nivaa1_route():
 
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -1991,6 +2035,8 @@ def overslag_nivaa2_route():
 
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -2071,6 +2117,8 @@ def overslag_nivaa3_route():
 
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -2169,6 +2217,8 @@ def forhold_nivaa1_route():
 
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -2249,6 +2299,8 @@ def forhold_nivaa2_route():
 
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -2329,6 +2381,8 @@ def forhold_nivaa3_route():
 
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -2429,6 +2483,8 @@ def variabler_nivaa1_route():
 
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -2508,6 +2564,8 @@ def variabler_nivaa2_route():
 
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -2587,6 +2645,8 @@ def variabler_nivaa3_route():
 
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -2677,6 +2737,8 @@ def enkle_uttrykk_nivaa1_route():
 
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -2756,6 +2818,8 @@ def enkle_uttrykk_nivaa2_route():
 
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -2835,6 +2899,8 @@ def enkle_uttrykk_nivaa3_route():
 
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -2925,6 +2991,8 @@ def regning_uttrykk_nivaa1_route():
 
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -3004,6 +3072,8 @@ def regning_uttrykk_nivaa2_route():
 
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -3083,6 +3153,8 @@ def regning_uttrykk_nivaa3_route():
 
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -3173,6 +3245,8 @@ def likninger_nivaa1_route():
 
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -3252,6 +3326,8 @@ def likninger_nivaa2_route():
 
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -3332,6 +3408,8 @@ def likninger_nivaa3_route():
 
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -3490,6 +3568,8 @@ def kjor_sette_inn(oppgaver, id_base, template_navn, link_prefix):
 
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -4411,6 +4491,8 @@ def kjor_funkstabell(oppgaver, id_base, template_navn, link_prefix):
 
     resultat = ""
     riktig = None
+    tabell_feil_indekser = []
+    tabell_innsendte = []
     conn = get_db()
     rows = conn.execute("SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'", (session["user_id"],)).fetchall()
     riktige_oppgaver = {row["oppgave_id"] for row in rows}
@@ -4442,18 +4524,24 @@ def kjor_funkstabell(oppgaver, id_base, template_navn, link_prefix):
 
         elif type_ in ["steg", "tabell"]:
             svar_liste = tabell_svar if type_ == "tabell" else [s[1] for s in ekstra]
+            innsendte = [request.form.get(f"steg_{i+1}", "").strip() for i in range(len(svar_liste))]
+            if type_ == "tabell":
+                tabell_innsendte = innsendte
             alle_riktige = all(
-                request.form.get(f"steg_{i+1}", "").strip().replace(".", ",").lower()
+                innsendte[i].replace(".", ",").lower()
                 == str(svar_liste[i]).replace(".", ",").lower()
                 for i in range(len(svar_liste))
             )
             if alle_riktige:
                 ok = True
             else:
+                feil_idx = [i for i in range(len(svar_liste))
+                            if innsendte[i].replace(".", ",").lower()
+                            != str(svar_liste[i]).replace(".", ",").lower()]
+                if type_ == "tabell":
+                    tabell_feil_indekser = feil_idx
                 feil = [tabell_labels[i] if type_ == "tabell" else ekstra[i][0]
-                        for i in range(len(svar_liste))
-                        if request.form.get(f"steg_{i+1}", "").strip().replace(".", ",").lower()
-                        != str(svar_liste[i]).replace(".", ",").lower()]
+                        for i in feil_idx]
                 resultat = "❌ Feil i: " + ", ".join(feil)
 
         if ok:
@@ -4652,6 +4740,80 @@ funksjonstabeller_nivaa1_oppgaver = [
       ("y når x=1","2"),
       ("y når x=2","5"),
       ("y når x=3","10")]),
+
+    # --- NYE OPPGAVER (tabellutfylling) ---
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = x + 10",
+     "alle",
+     (["x", "y = x + 10"],
+      [["0","?"],["5","?"],["10","?"],["15","?"]],
+      ["10","15","20","25"],
+      ["y når x=0","y når x=5","y når x=10","y når x=15"])),
+
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = 4x",
+     "alle",
+     (["x", "y = 4x"],
+      [["0","?"],["2","?"],["5","?"],["10","?"]],
+      ["0","8","20","40"],
+      ["y når x=0","y når x=2","y når x=5","y når x=10"])),
+
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = 6x − 2",
+     "alle",
+     (["x", "y = 6x − 2"],
+      [["1","?"],["2","?"],["3","?"],["4","?"]],
+      ["4","10","16","22"],
+      ["y når x=1","y når x=2","y når x=3","y når x=4"])),
+
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = 2x + 6",
+     "alle",
+     (["x", "y = 2x + 6"],
+      [["0","?"],["3","?"],["6","?"],["9","?"]],
+      ["6","12","18","24"],
+      ["y når x=0","y når x=3","y når x=6","y når x=9"])),
+
+    ("tabell",
+     "🛒 En butikk selger is til 15 kr stykket.\n📋 Fyll inn tabellen (x = antall is, y = pris i kr)",
+     "alle",
+     (["x (antall)", "y (kr)"],
+      [["1","?"],["2","?"],["5","?"],["10","?"]],
+      ["15","30","75","150"],
+      ["y når x=1","y når x=2","y når x=5","y når x=10"])),
+
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = 30 − 5x",
+     "alle",
+     (["x", "y = 30 − 5x"],
+      [["0","?"],["2","?"],["4","?"],["6","?"]],
+      ["30","20","10","0"],
+      ["y når x=0","y når x=2","y når x=4","y når x=6"])),
+
+    ("tabell",
+     "🚴 En syklist sykler 15 km/t.\n📋 Fyll inn tabellen (x = timer, y = km)",
+     "alle",
+     (["x (timer)", "y (km)"],
+      [["1","?"],["2","?"],["3","?"],["4","?"]],
+      ["15","30","45","60"],
+      ["y når x=1","y når x=2","y når x=3","y når x=4"])),
+
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = x² + x",
+     "alle",
+     (["x", "y = x² + x"],
+      [["1","?"],["2","?"],["3","?"],["4","?"]],
+      ["2","6","12","20"],
+      ["y når x=1","y når x=2","y når x=3","y når x=4"])),
+
+    ("flervalg",
+     "Tabellen for y = 5x:\nx=1→5, x=2→10, x=3→15\nHva er y når x=8?",
+     "40", ["35","45","25"]),
+
+    ("skriv",
+     "Tabellen:\nx=0→y=0\nx=1→y=7\nx=2→y=14\nHva er y når x=6?",
+     "42", None),
+
 ]
 
 
@@ -4834,6 +4996,80 @@ funksjonstabeller_nivaa2_oppgaver = [
      "Match x-verdien med riktig y-verdi for y = 5x − 2",
      "riktig",
      [("x=1","3"),("x=2","8"),("x=3","13"),("x=4","18")]),
+
+    # --- NYE OPPGAVER NIVÅ 2 (tabellutfylling + finn formel) ---
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = 3x − 5",
+     "alle",
+     (["x", "y = 3x − 5"],
+      [["2","?"],["4","?"],["6","?"],["8","?"]],
+      ["1","7","13","19"],
+      ["y når x=2","y når x=4","y når x=6","y når x=8"])),
+
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = 0.5x + 3",
+     "alle",
+     (["x", "y = 0.5x + 3"],
+      [["0","?"],["2","?"],["4","?"],["6","?"]],
+      ["3","4","5","6"],
+      ["y når x=0","y når x=2","y når x=4","y når x=6"])),
+
+    ("tabell",
+     "🏃 En jogger øker farten gradvis: y = 2x + 5 km/t (x = minutter).\n📋 Fyll inn tabellen",
+     "alle",
+     (["x (min)", "y = 2x + 5"],
+      [["0","?"],["5","?"],["10","?"],["15","?"]],
+      ["5","15","25","35"],
+      ["y når x=0","y når x=5","y når x=10","y når x=15"])),
+
+    ("steg",
+     "📝 Finn formelen fra tabellen:\nx=0→y=4, x=2→y=10, x=4→y=16",
+     "alle",
+     [("Steg 1: Finn stigning: (10−4)/(2−0)","3"),
+      ("Steg 2: Konstantledd b (y når x=0)","4"),
+      ("Steg 3: Skriv formelen y = ax + b","y = 3x + 4"),
+      ("Steg 4: Hva er y når x = 6?","22")]),
+
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = x² − 1",
+     "alle",
+     (["x", "y = x² − 1"],
+      [["1","?"],["2","?"],["3","?"],["4","?"]],
+      ["0","3","8","15"],
+      ["y når x=1","y når x=2","y når x=3","y når x=4"])),
+
+    ("tabell",
+     "💵 Taxipris: y = 12x + 25 (x = km, y = pris i kr).\n📋 Fyll inn tabellen",
+     "alle",
+     (["x (km)", "y (kr)"],
+      [["1","?"],["3","?"],["5","?"],["10","?"]],
+      ["37","61","85","145"],
+      ["y når x=1","y når x=3","y når x=5","y når x=10"])),
+
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = −3x + 12",
+     "alle",
+     (["x", "y = −3x + 12"],
+      [["0","?"],["2","?"],["3","?"],["4","?"]],
+      ["12","6","3","0"],
+      ["y når x=0","y når x=2","y når x=3","y når x=4"])),
+
+    ("flervalg",
+     "Tabellen:\nx=0→y=1, x=1→y=3, x=2→y=9, x=3→y=27\nHva slags sammenheng er dette?",
+     "Eksponentiell (3^x)", ["Lineær","Kvadratisk","Proporsjonal"]),
+
+    ("skriv",
+     "Tabellen:\nx=1→y=6, x=3→y=14, x=5→y=22\nHva er formelen? (formen y = ax + b)",
+     "y = 4x + 2", None),
+
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = 5x²",
+     "alle",
+     (["x", "y = 5x²"],
+      [["1","?"],["2","?"],["3","?"],["4","?"]],
+      ["5","20","45","80"],
+      ["y når x=1","y når x=2","y når x=3","y når x=4"])),
+
 ]
 
 
@@ -5033,6 +5269,80 @@ funksjonstabeller_nivaa3_oppgaver = [
       ("a = (y(1)−b) / 1² = (5−3)/1","2"),
       ("Sjekk: 2·2²+3 = ?","11"),
       ("Formelen er y = ?","y = 2x² + 3")]),
+
+    # --- NYE OPPGAVER NIVÅ 3 (avansert tabellanalyse) ---
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = x³",
+     "alle",
+     (["x", "y = x³"],
+      [["1","?"],["2","?"],["3","?"],["4","?"]],
+      ["1","8","27","64"],
+      ["y når x=1","y når x=2","y når x=3","y når x=4"])),
+
+    ("tabell",
+     "📋 To planer sammenliknet.\nPlan A: y = 5x. Plan B: y = 3x + 8.\nFyll inn for Plan A:",
+     "alle",
+     (["x", "Plan A: y=5x"],
+      [["0","?"],["2","?"],["4","?"],["6","?"]],
+      ["0","10","20","30"],
+      ["y når x=0","y når x=2","y når x=4","y når x=6"])),
+
+    ("steg",
+     "📝 Analyse: Tabellen viser x=0→2, x=1→5, x=2→10, x=3→17.\nEr det lineær, kvadratisk eller noe annet?",
+     "alle",
+     [("Steg 1: Finn differansene: 5−2, 10−5, 17−10","3, 5, 7"),
+      ("Steg 2: Er differansene like? (ja/nei)","nei"),
+      ("Steg 3: Finn 2. differanse: 5−3, 7−5","2, 2"),
+      ("Steg 4: Hva slags sammenheng er det?","kvadratisk")]),
+
+    ("tabell",
+     "🏦 Spareplan: y = 1000 + 200x (x = måneder, y = kr på konto).\n📋 Fyll inn tabellen",
+     "alle",
+     (["x (mnd)", "y (kr)"],
+      [["0","?"],["6","?"],["12","?"],["24","?"]],
+      ["1000","2200","3400","5800"],
+      ["y når x=0","y når x=6","y når x=12","y når x=24"])),
+
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = 2x² + 3x",
+     "alle",
+     (["x", "y = 2x² + 3x"],
+      [["0","?"],["1","?"],["2","?"],["3","?"]],
+      ["0","5","14","27"],
+      ["y når x=0","y når x=1","y når x=2","y når x=3"])),
+
+    ("flervalg",
+     "Tabellen: x=0→100, x=1→50, x=2→25, x=3→12.5\nHva slags funksjon er dette?",
+     "Eksponentiell nedgang (halvering)", ["Lineær","Proporsjonal","Kvadratisk"]),
+
+    ("tabell",
+     "🌡️ Kjøling: y = 80 − 10x (x = minutter, y = temperatur i °C).\n📋 Fyll inn tabellen",
+     "alle",
+     (["x (min)", "y (°C)"],
+      [["0","?"],["2","?"],["5","?"],["8","?"]],
+      ["80","60","30","0"],
+      ["y når x=0","y når x=2","y når x=5","y når x=8"])),
+
+    ("steg",
+     "📝 To bedrifter: A: y = 8x + 50, B: y = 12x.\nFinn når de tjener like mye.",
+     "alle",
+     [("Steg 1: Sett 8x + 50 = 12x og trekk fra 8x","4x = 50"),
+      ("Steg 2: Del på 4","x = 12.5"),
+      ("Steg 3: Hva er y for begge når x = 12.5?","150"),
+      ("Steg 4: Hvilken er best når x > 12.5?","B")]),
+
+    ("skriv",
+     "Tabellen: x=1→5, x=4→17, x=7→29.\nHva er stigningstallet (a)?",
+     "4", None),
+
+    ("tabell",
+     "📋 Fyll inn tabellen for f(x) = (x+1)²",
+     "alle",
+     (["x", "y = (x+1)²"],
+      [["0","?"],["1","?"],["2","?"],["3","?"]],
+      ["1","4","9","16"],
+      ["y når x=0","y når x=1","y når x=2","y når x=3"])),
+
 ]
 
 
@@ -5044,6 +5354,58 @@ def funksjonstabeller_nivaa3_route():
         "funksjonstabeller_nivaa3.html",
         "/oppgaver/Funksjonstabeller/nivaa3"
     )
+
+
+
+
+# ============================================================
+# PVP – KONKURRANSEMODUS
+# ============================================================
+import random as _random
+
+# Samle alle enkle (spørsmål, svar) oppgaver fra hele sitet
+def _bygg_pvp_pool():
+    alle = []
+    lister = [
+        hele_tall_nivaa1_oppgaver, hele_tall_nivaa2_oppgaver, hele_tall_nivaa3_oppgaver,
+        desimaltall_nivaa1_oppgaver, desimaltall_nivaa2_oppgaver, desimaltall_nivaa3_oppgaver,
+        prosent_nivaa1_oppgaver, prosent_nivaa2_oppgaver, prosent_nivaa3_oppgaver,
+        negative_tall_nivaa1_oppgaver, negative_tall_nivaa2_oppgaver, negative_tall_nivaa3_oppgaver,
+        overslag_nivaa1_oppgaver, overslag_nivaa2_oppgaver, overslag_nivaa3_oppgaver,
+        variabler_nivaa1_oppgaver, variabler_nivaa2_oppgaver, variabler_nivaa3_oppgaver,
+        enkle_uttrykk_nivaa1_oppgaver, enkle_uttrykk_nivaa2_oppgaver, enkle_uttrykk_nivaa3_oppgaver,
+        regning_uttrykk_nivaa1_oppgaver, regning_uttrykk_nivaa2_oppgaver, regning_uttrykk_nivaa3_oppgaver,
+        likninger_nivaa1_oppgaver, likninger_nivaa2_oppgaver, likninger_nivaa3_oppgaver,
+    ]
+    for lst in lister:
+        for item in lst:
+            # Kun enkle 2-tupler (spørsmål, svar)
+            if isinstance(item, tuple) and len(item) == 2 and isinstance(item[0], str) and isinstance(item[1], str):
+                alle.append({"q": item[0], "a": item[1]})
+    return alle
+
+PVP_POOL = _bygg_pvp_pool()
+
+
+@app.route('/pvp')
+@login_required
+def pvp_menu():
+    return render_template('pvp_menu.html')
+
+
+@app.route('/pvp/mot-ai')
+@login_required
+def pvp_ai():
+    return render_template('pvp_ai.html')
+
+
+@app.route('/pvp/ai-oppgave')
+@login_required
+def pvp_ai_oppgave():
+    if not PVP_POOL:
+        return {"error": "Ingen oppgaver"}, 500
+    oppgave = _random.choice(PVP_POOL)
+    return {"q": oppgave["q"], "a": oppgave["a"]}
 
 
 # START SERVER
