@@ -84,40 +84,46 @@ if (!hasN && savedTask && savedTask !== "{{ nummer }}") {
 
     {% elif type == "tabell" %}
         <div class="steg-intro">📋 Fyll inn de manglende verdiene i tabellen.</div>
-        <div class="funk-tabell-wrapper">
-            <table class="funk-tabell">
-                <thead>
-                    <tr>
-                        {% for col in tabell_headers %}
-                        <th>{{ col }}</th>
+        <form method="POST" id="tabellForm">
+            <div class="funk-tabell-wrapper">
+                <table class="funk-tabell">
+                    <thead>
+                        <tr>
+                            {% for col in tabell_headers %}
+                            <th>{{ col }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set ns = namespace(input_idx=0) %}
+                        {% for rad in tabell_rader %}
+                        <tr>
+                            {% for celle in rad %}
+                            <td>
+                                {% if celle == "?" %}
+                                    {% set ci = ns.input_idx %}
+                                    <input
+                                        type="text"
+                                        name="steg_{{ ci + 1 }}"
+                                        class="tabell-input{% if resultat and ci in tabell_feil_indekser %} tabell-feil{% elif resultat and tabell_innsendte and ci not in tabell_feil_indekser %} tabell-riktig{% endif %}"
+                                        placeholder="?"
+                                        autocomplete="off"
+                                        value="{{ tabell_innsendte[ci] if tabell_innsendte and ci < tabell_innsendte|length else '' }}"
+                                    >
+                                    {% set ns.input_idx = ns.input_idx + 1 %}
+                                {% else %}
+                                {{ celle }}
+                                {% endif %}
+                            </td>
+                            {% endfor %}
+                        </tr>
                         {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for rad in tabell_rader %}
-                    <tr>
-                        {% for celle in rad %}
-                        <td>
-                            {% if celle == "?" %}
-                            <input type="text" name="tabell_{{ loop.index0 }}_{{ loop.index0 }}" class="tabell-input" placeholder="?" autocomplete="off" data-rad="{{ loop.index0 }}">
-                            {% else %}
-                            {{ celle }}
-                            {% endif %}
-                        </td>
-                        {% endfor %}
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <form method="POST" id="tabellForm" class="steg-form">
-            {% for i in range(tabell_svar|length) %}
-            <div class="steg-rad">
-                <label class="steg-label">{{ tabell_labels[i] }}</label>
-                <input type="text" name="steg_{{ loop.index }}" class="steg-input" placeholder="?" autocomplete="off">
+                    </tbody>
+                </table>
             </div>
-            {% endfor %}
+            {% if not riktig %}
             <button class="task-submit" style="margin-top:16px;">Sjekk svar</button>
+            {% endif %}
         </form>
     {% endif %}
 
