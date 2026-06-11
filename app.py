@@ -5363,28 +5363,45 @@ def funksjonstabeller_nivaa3_route():
 # ============================================================
 import random as _random
 
-# Samle alle enkle (spørsmål, svar) oppgaver fra hele sitet
-def _bygg_pvp_pool():
-    alle = []
-    lister = [
-        hele_tall_nivaa1_oppgaver, hele_tall_nivaa2_oppgaver, hele_tall_nivaa3_oppgaver,
-        desimaltall_nivaa1_oppgaver, desimaltall_nivaa2_oppgaver, desimaltall_nivaa3_oppgaver,
-        prosent_nivaa1_oppgaver, prosent_nivaa2_oppgaver, prosent_nivaa3_oppgaver,
-        negative_tall_nivaa1_oppgaver, negative_tall_nivaa2_oppgaver, negative_tall_nivaa3_oppgaver,
-        overslag_nivaa1_oppgaver, overslag_nivaa2_oppgaver, overslag_nivaa3_oppgaver,
-        variabler_nivaa1_oppgaver, variabler_nivaa2_oppgaver, variabler_nivaa3_oppgaver,
-        enkle_uttrykk_nivaa1_oppgaver, enkle_uttrykk_nivaa2_oppgaver, enkle_uttrykk_nivaa3_oppgaver,
-        regning_uttrykk_nivaa1_oppgaver, regning_uttrykk_nivaa2_oppgaver, regning_uttrykk_nivaa3_oppgaver,
-        likninger_nivaa1_oppgaver, likninger_nivaa2_oppgaver, likninger_nivaa3_oppgaver,
-    ]
-    for lst in lister:
-        for item in lst:
-            # Kun enkle 2-tupler (spørsmål, svar)
-            if isinstance(item, tuple) and len(item) == 2 and isinstance(item[0], str) and isinstance(item[1], str):
-                alle.append({"q": item[0], "a": item[1]})
-    return alle
+def _simple(lst):
+    """Hent bare enkle 2-tupler (spørsmål, svar) fra en oppgaveliste."""
+    return [{"q": item[0], "a": item[1]}
+            for item in lst
+            if isinstance(item, tuple) and len(item) == 2
+            and isinstance(item[0], str) and isinstance(item[1], str)]
 
-PVP_POOL = _bygg_pvp_pool()
+# Lett: bare nivå 1-oppgaver (enkel matte)
+PVP_POOL_EASY = []
+for _lst in [
+    hele_tall_nivaa1_oppgaver, desimaltall_nivaa1_oppgaver, prosent_nivaa1_oppgaver,
+    negative_tall_nivaa1_oppgaver, overslag_nivaa1_oppgaver, brok_nivaa1_oppgaver,
+    variabler_nivaa1_oppgaver, enkle_uttrykk_nivaa1_oppgaver,
+    regning_uttrykk_nivaa1_oppgaver, likninger_nivaa1_oppgaver,
+]:
+    PVP_POOL_EASY.extend(_simple(_lst))
+
+# Middels: nivå 2-oppgaver
+PVP_POOL_MEDIUM = []
+for _lst in [
+    hele_tall_nivaa2_oppgaver, desimaltall_nivaa2_oppgaver, prosent_nivaa2_oppgaver,
+    negative_tall_nivaa2_oppgaver, overslag_nivaa2_oppgaver, brok_nivaa2_oppgaver,
+    potenser_nivaa2_oppgaver, variabler_nivaa2_oppgaver, enkle_uttrykk_nivaa2_oppgaver,
+    regning_uttrykk_nivaa2_oppgaver, likninger_nivaa2_oppgaver,
+    forhold_nivaa2_oppgaver, sette_inn_nivaa2_oppgaver,
+]:
+    PVP_POOL_MEDIUM.extend(_simple(_lst))
+
+# Vanskelig: nivå 3-oppgaver (avansert)
+PVP_POOL_HARD = []
+for _lst in [
+    hele_tall_nivaa3_oppgaver, desimaltall_nivaa3_oppgaver, prosent_nivaa3_oppgaver,
+    negative_tall_nivaa3_oppgaver, brok_nivaa3_oppgaver, potenser_nivaa3_oppgaver,
+    variabler_nivaa3_oppgaver, enkle_uttrykk_nivaa3_oppgaver,
+    regning_uttrykk_nivaa3_oppgaver, likninger_nivaa3_oppgaver,
+    forhold_nivaa3_oppgaver, sette_inn_nivaa3_oppgaver,
+    tall_symboler_nivaa3_oppgaver, sammenheng_nivaa3_oppgaver,
+]:
+    PVP_POOL_HARD.extend(_simple(_lst))
 
 
 @app.route('/pvp')
@@ -5402,9 +5419,11 @@ def pvp_ai():
 @app.route('/pvp/ai-oppgave')
 @login_required
 def pvp_ai_oppgave():
-    if not PVP_POOL:
+    diff = request.args.get('diff', 'medium')
+    pool = {'easy': PVP_POOL_EASY, 'medium': PVP_POOL_MEDIUM, 'hard': PVP_POOL_HARD}.get(diff, PVP_POOL_MEDIUM)
+    if not pool:
         return {"error": "Ingen oppgaver"}, 500
-    oppgave = _random.choice(PVP_POOL)
+    oppgave = _random.choice(pool)
     return {"q": oppgave["q"], "a": oppgave["a"]}
 
 
