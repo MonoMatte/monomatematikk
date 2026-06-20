@@ -37,3 +37,26 @@ CREATE TABLE IF NOT EXISTS kunngjøringer (
 conn.commit()
 conn.close()
 print("База данных полностью пересоздана и готова!")
+# 4. ТАБЛИЦА КЛАССОВ
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS klasser (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    navn TEXT NOT NULL,
+    laerer_id INTEGER NOT NULL,
+    opprettet TEXT DEFAULT (datetime('now'))
+)
+""")
+
+# 5. УЧЕНИКИ В КЛАССЕ
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS klasse_elever (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    klasse_id INTEGER NOT NULL,
+    elev_id INTEGER NOT NULL,
+    UNIQUE(klasse_id, elev_id)
+)
+""")
+
+conn.commit()
+conn.close()
+print("Lærer-tabeller lagt til!")

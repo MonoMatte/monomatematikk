@@ -2538,3 +2538,62 @@ body {
 .pvp-diff-icon { font-size: 2rem; margin-bottom: 8px; }
 .pvp-diff-name { font-size: 1.1rem; font-weight: 800; margin-bottom: 4px; }
 .pvp-diff-desc { font-size: .78rem; opacity: .65; }
+
+
+/* ================================================== */
+/* LÆRER-PORTAL                                       */
+/* ================================================== */
+
+.laerer-klasse-rad {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: rgba(255,255,255,.5);
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,.4);
+    backdrop-filter: blur(8px);
+    gap: 16px;
+}
+.laerer-klasse-navn { font-size: 1.1rem; font-weight: 800; }
+.laerer-klasse-meta { font-size: .82rem; opacity: .55; margin-top: 3px; }
+
+.laerer-svak-rad {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(0,0,0,.06);
+}
+.laerer-svak-tema { min-width: 220px; font-weight: 600; font-size: .9rem; }
+.laerer-svak-snitt { display: flex; align-items: center; gap: 12px; flex: 1; font-size: .85rem; opacity: .7; }
+.laerer-svak-bar-wrap { flex: 1; height: 8px; background: #e9ecef; border-radius: 4px; overflow: hidden; }
+.laerer-svak-bar { height: 100%; background: linear-gradient(90deg, #dc3545, #fd7e14); border-radius: 4px; transition: width .5s; }
+
+.laerer-score-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: .9rem;
+}
+.badge-green { background: #d1fae5; color: #065f46; }
+.badge-yellow { background: #fef3c7; color: #92400e; }
+.badge-red { background: #fee2e2; color: #991b1b; }
+
+.laerer-topic-row td { background: rgba(248,249,250,.6); }
+.laerer-topic-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 8px;
+}
+.laerer-topic-chip {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: .78rem;
+    font-weight: 600;
+}
+.chip-green { background: #d1fae5; color: #065f46; }
+.chip-yellow { background: #fef3c7; color: #92400e; }
+.chip-red { background: #fee2e2; color: #991b1b; }

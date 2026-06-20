@@ -24,6 +24,11 @@
         </div>
 
         <div class="db-header-right">
+            {% if role == "teacher" %}
+                <a href="/laerer" class="db-nav-btn" style="background:linear-gradient(135deg,#0d6efd,#6610f2);color:white;border:none;">
+                    🏫 Lærerportal
+                </a>
+            {% endif %}
             {% if role == "admin" %}
                 <a href="/admin" class="db-nav-btn db-nav-admin">⚙️ Admin</a>
             {% endif %}

@@ -195,7 +195,7 @@ def admin_endre_rolle(user_id):
     if session.get("role") != "admin":
         return redirect("/dashboard")
     ny_rolle = request.form.get("rolle")
-    if ny_rolle in ["user", "admin"]:
+    if ny_rolle in ["user", "admin", "teacher"]:
         conn = get_db()
         conn.execute("UPDATE users SET role = ? WHERE id = ?", (ny_rolle, user_id))
         conn.commit()
@@ -5425,6 +5425,238 @@ def pvp_ai_oppgave():
         return {"error": "Ingen oppgaver"}, 500
     oppgave = _random.choice(pool)
     return {"q": oppgave["q"], "a": oppgave["a"]}
+
+
+
+
+# ============================================================
+# LÆRER-SYSTEM
+# ============================================================
+
+TOPIC_MAP = {
+    1:     ("Regnerekkefølge", "Nivå 1"),
+    2000:  ("Regnerekkefølge", "Nivå 2"),
+    3000:  ("Regnerekkefølge", "Nivå 3"),
+    4000:  ("Hele tall", "Nivå 1"),
+    5000:  ("Hele tall", "Nivå 2"),
+    6000:  ("Hele tall", "Nivå 3"),
+    7000:  ("Desimaltall", "Nivå 1"),
+    8000:  ("Desimaltall", "Nivå 2"),
+    9000:  ("Desimaltall", "Nivå 3"),
+    10000: ("Prosent", "Nivå 1"),
+    11000: ("Prosent", "Nivå 2"),
+    12000: ("Prosent", "Nivå 3"),
+    13000: ("Negative tall", "Nivå 1"),
+    14000: ("Negative tall", "Nivå 2"),
+    15000: ("Negative tall", "Nivå 3"),
+    16000: ("Brøker", "Nivå 1"),
+    17000: ("Brøker", "Nivå 2"),
+    18000: ("Brøker", "Nivå 3"),
+    19000: ("Potenser", "Nivå 1"),
+    20000: ("Potenser", "Nivå 2"),
+    21000: ("Potenser", "Nivå 3"),
+    22000: ("Overslag", "Nivå 1"),
+    23000: ("Overslag", "Nivå 2"),
+    24000: ("Overslag", "Nivå 3"),
+    25000: ("Forhold", "Nivå 1"),
+    26000: ("Forhold", "Nivå 2"),
+    27000: ("Forhold", "Nivå 3"),
+    28000: ("Variabler", "Nivå 1"),
+    29000: ("Variabler", "Nivå 2"),
+    30000: ("Variabler", "Nivå 3"),
+    31000: ("Enkle uttrykk", "Nivå 1"),
+    32000: ("Enkle uttrykk", "Nivå 2"),
+    33000: ("Enkle uttrykk", "Nivå 3"),
+    34000: ("Regning uttrykk", "Nivå 1"),
+    35000: ("Regning uttrykk", "Nivå 2"),
+    36000: ("Regning uttrykk", "Nivå 3"),
+    37000: ("Likninger", "Nivå 1"),
+    38000: ("Likninger", "Nivå 2"),
+    39000: ("Likninger", "Nivå 3"),
+    40000: ("Sette inn verdier", "Nivå 1"),
+    41000: ("Sette inn verdier", "Nivå 2"),
+    42000: ("Sette inn verdier", "Nivå 3"),
+    43000: ("Tall og symboler", "Nivå 1"),
+    44000: ("Tall og symboler", "Nivå 2"),
+    45000: ("Tall og symboler", "Nivå 3"),
+    46000: ("Sammenheng", "Nivå 1"),
+    47000: ("Sammenheng", "Nivå 2"),
+    48000: ("Sammenheng", "Nivå 3"),
+    49000: ("Funksjonstabeller", "Nivå 1"),
+    50000: ("Funksjonstabeller", "Nivå 2"),
+    51000: ("Funksjonstabeller", "Nivå 3"),
+}
+
+def oppgave_id_to_topic(oid):
+    """Return (tema, nivå) for a given oppgave_id."""
+    # Check exact base (old style: base+1..30 or base+1..50)
+    for base, (tema, nivaa) in sorted(TOPIC_MAP.items(), reverse=True):
+        if base == 1 and oid <= 30:
+            return tema, nivaa
+        elif base > 1 and base < oid <= base + 200:
+            return tema, nivaa
+    return "Ukjent", ""
+
+def teacher_required(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if session.get("role") not in ("teacher", "admin"):
+            return redirect("/dashboard")
+        return f(*args, **kwargs)
+    return wrapper
+
+
+@app.route("/laerer")
+@login_required
+@teacher_required
+def laerer_dashboard():
+    conn = get_db()
+    klasser = conn.execute(
+        "SELECT k.*, COUNT(ke.elev_id) as antall_elever FROM klasser k "
+        "LEFT JOIN klasse_elever ke ON ke.klasse_id = k.id "
+        "WHERE k.laerer_id = ? GROUP BY k.id ORDER BY k.id DESC",
+        (session["user_id"],)
+    ).fetchall()
+    return render_template("laerer_dashboard.html", klasser=klasser)
+
+
+@app.route("/laerer/klasse/ny", methods=["POST"])
+@login_required
+@teacher_required
+def laerer_ny_klasse():
+    navn = request.form.get("navn", "").strip()
+    if navn:
+        conn = get_db()
+        conn.execute("INSERT INTO klasser (navn, laerer_id) VALUES (?, ?)",
+                     (navn, session["user_id"]))
+        conn.commit()
+    return redirect("/laerer")
+
+
+@app.route("/laerer/klasse/<int:klasse_id>")
+@login_required
+@teacher_required
+def laerer_klasse(klasse_id):
+    conn = get_db()
+
+    # Verify ownership
+    klasse = conn.execute(
+        "SELECT * FROM klasser WHERE id = ? AND laerer_id = ?",
+        (klasse_id, session["user_id"])
+    ).fetchone()
+    if not klasse:
+        return redirect("/laerer")
+
+    # Students in class
+    elever = conn.execute(
+        "SELECT u.id, u.username, u.created_at, "
+        "COUNT(p.id) as totalt_loste, "
+        "MAX(p.id) as siste_aktivitet_id "
+        "FROM klasse_elever ke "
+        "JOIN users u ON u.id = ke.elev_id "
+        "LEFT JOIN progress p ON p.user_id = u.id "
+        "WHERE ke.klasse_id = ? "
+        "GROUP BY u.id ORDER BY u.username",
+        (klasse_id,)
+    ).fetchall()
+
+    # Progress per student per topic
+    elev_topics = {}
+    for elev in elever:
+        rows = conn.execute(
+            "SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'",
+            (elev["id"],)
+        ).fetchall()
+        topic_count = {}
+        for r in rows:
+            oid = r["oppgave_id"]
+            tema, nivaa = oppgave_id_to_topic(oid)
+            key = f"{tema} – {nivaa}"
+            topic_count[key] = topic_count.get(key, 0) + 1
+        elev_topics[elev["id"]] = topic_count
+
+    # All users not in this class (for adding)
+    alle_brukere = conn.execute(
+        "SELECT u.id, u.username FROM users u "
+        "WHERE u.role = 'user' AND u.id NOT IN "
+        "(SELECT elev_id FROM klasse_elever WHERE klasse_id = ?) "
+        "ORDER BY u.username",
+        (klasse_id,)
+    ).fetchall()
+
+    # Weak topics across class (where avg completion is lowest)
+    all_topic_counts = {}
+    for elev_id, topics in elev_topics.items():
+        for t, cnt in topics.items():
+            if t not in all_topic_counts:
+                all_topic_counts[t] = []
+            all_topic_counts[t].append(cnt)
+
+    # Topics sorted by average completion ascending (weakest first)
+    topic_avg = []
+    for t, counts in all_topic_counts.items():
+        avg = sum(counts) / len(elever) if elever else 0
+        topic_avg.append((t, round(avg, 1)))
+    topic_avg.sort(key=lambda x: x[1])
+    svake_temaer = topic_avg[:5]  # top 5 weakest
+
+    return render_template("laerer_klasse.html",
+        klasse=klasse,
+        elever=elever,
+        elev_topics=elev_topics,
+        alle_brukere=alle_brukere,
+        svake_temaer=svake_temaer
+    )
+
+
+@app.route("/laerer/klasse/<int:klasse_id>/legg-til", methods=["POST"])
+@login_required
+@teacher_required
+def laerer_legg_til_elev(klasse_id):
+    conn = get_db()
+    klasse = conn.execute("SELECT * FROM klasser WHERE id = ? AND laerer_id = ?",
+                          (klasse_id, session["user_id"])).fetchone()
+    if not klasse:
+        return redirect("/laerer")
+    elev_id = request.form.get("elev_id")
+    if elev_id:
+        try:
+            conn.execute("INSERT INTO klasse_elever (klasse_id, elev_id) VALUES (?, ?)",
+                         (klasse_id, int(elev_id)))
+            conn.commit()
+        except Exception:
+            pass
+    return redirect(f"/laerer/klasse/{klasse_id}")
+
+
+@app.route("/laerer/klasse/<int:klasse_id>/fjern/<int:elev_id>", methods=["POST"])
+@login_required
+@teacher_required
+def laerer_fjern_elev(klasse_id, elev_id):
+    conn = get_db()
+    klasse = conn.execute("SELECT * FROM klasser WHERE id = ? AND laerer_id = ?",
+                          (klasse_id, session["user_id"])).fetchone()
+    if not klasse:
+        return redirect("/laerer")
+    conn.execute("DELETE FROM klasse_elever WHERE klasse_id = ? AND elev_id = ?",
+                 (klasse_id, elev_id))
+    conn.commit()
+    return redirect(f"/laerer/klasse/{klasse_id}")
+
+
+@app.route("/laerer/klasse/<int:klasse_id>/slett", methods=["POST"])
+@login_required
+@teacher_required
+def laerer_slett_klasse(klasse_id):
+    conn = get_db()
+    klasse = conn.execute("SELECT * FROM klasser WHERE id = ? AND laerer_id = ?",
+                          (klasse_id, session["user_id"])).fetchone()
+    if not klasse:
+        return redirect("/laerer")
+    conn.execute("DELETE FROM klasse_elever WHERE klasse_id = ?", (klasse_id,))
+    conn.execute("DELETE FROM klasser WHERE id = ?", (klasse_id,))
+    conn.commit()
+    return redirect("/laerer")
 
 
 # START SERVER

@@ -99,6 +99,7 @@
                             <select name="rolle" class="admin-select" onchange="this.form.submit()">
                                 <option value="user" {{ 'selected' if u.role == 'user' }}>user</option>
                                 <option value="admin" {{ 'selected' if u.role == 'admin' }}>admin</option>
+                                <option value="teacher" {{ 'selected' if u.role == 'teacher' }}>teacher (lærer)</option>
                             </select>
                         </form>
                         {% else %}
