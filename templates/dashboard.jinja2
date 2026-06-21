@@ -53,6 +53,29 @@
     </div>
     {% endif %}
 
+    <!-- TILDELINGER FRA LÆRER -->
+    {% if mine_tildelinger %}
+    <div class="topic-section" style="margin-bottom: 30px;">
+        <h2 class="topic-title">📌 Oppgaver fra læreren din</h2>
+        {% for t in mine_tildelinger %}
+        <div class="elev-tildeling-card {% if t.ferdig %}ferdig{% endif %}">
+            <div class="elev-tildeling-icon">{% if t.ferdig %}✅{% else %}📋{% endif %}</div>
+            <div>
+                <div class="elev-tildeling-tema">{{ t.tema }} – {{ t.nivaa }}</div>
+                <div class="elev-tildeling-meta">
+                    {% if t.melding %}«{{ t.melding }}» &nbsp;·&nbsp;{% endif %}
+                    {% if t.frist %}Frist: {{ t.frist }} &nbsp;·&nbsp;{% endif %}
+                    {{ t.loste }} oppgaver løst
+                </div>
+            </div>
+            <a href="{{ t.link }}" class="elev-tildeling-btn">
+                {% if t.ferdig %}Øv mer →{% else %}Start →{% endif %}
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <!-- SEKSJON: REGNEREKKEFØLGE -->
     <div class="topic-section">
         <h2 class="topic-title">Regnerekkefølge</h2>

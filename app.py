@@ -119,10 +119,37 @@ def dashboard():
 
     kunngjøring = conn.execute("SELECT * FROM kunngjøringer ORDER BY id DESC LIMIT 1").fetchone()
 
+    # Hent tildelinger fra klasser eleven er medlem av
+    mine_tildelinger_rows = conn.execute(
+        "SELECT t.* FROM tildelinger t "
+        "JOIN klasse_elever ke ON ke.klasse_id = t.klasse_id "
+        "WHERE ke.elev_id = ? ORDER BY t.id DESC",
+        (session["user_id"],)
+    ).fetchall()
+
+    mine_tildelinger = []
+    for t in mine_tildelinger_rows:
+        id_base = t["id_base"]
+        loste = conn.execute(
+            "SELECT COUNT(*) as cnt FROM progress WHERE user_id = ? AND status = 'riktig' "
+            "AND oppgave_id > ? AND oppgave_id <= ?",
+            (session["user_id"], id_base, id_base + 200)
+        ).fetchone()["cnt"]
+        mine_tildelinger.append({
+            "tema": t["tema"],
+            "nivaa": t["nivaa"],
+            "frist": t["frist"],
+            "melding": t["melding"],
+            "loste": loste,
+            "ferdig": loste >= 5,
+            "link": f"/oppgaver/{t['tema']}/{'nivaa1' if t['nivaa'] == 'Nivå 1' else 'nivaa2' if t['nivaa'] == 'Nivå 2' else 'nivaa3'}",
+        })
+
     return render_template("dashboard.jinja2",
         username=session["username"],
         role=session.get("role", "user"),
         total=total,
+        mine_tildelinger=mine_tildelinger,
         nivaa1=rnivaa1,
         nivaa2=rnivaa2,
         nivaa3=rnivaa3,
@@ -5452,24 +5479,24 @@ TOPIC_MAP = {
     16000: ("Brøker", "Nivå 1"),
     17000: ("Brøker", "Nivå 2"),
     18000: ("Brøker", "Nivå 3"),
-    19000: ("Potenser", "Nivå 1"),
-    20000: ("Potenser", "Nivå 2"),
-    21000: ("Potenser", "Nivå 3"),
-    22000: ("Overslag", "Nivå 1"),
-    23000: ("Overslag", "Nivå 2"),
-    24000: ("Overslag", "Nivå 3"),
-    25000: ("Forhold", "Nivå 1"),
-    26000: ("Forhold", "Nivå 2"),
-    27000: ("Forhold", "Nivå 3"),
+    19000: ("Potenser (enkle)", "Nivå 1"),
+    20000: ("Potenser (enkle)", "Nivå 2"),
+    21000: ("Potenser (enkle)", "Nivå 3"),
+    22000: ("Overslag og hoderegning", "Nivå 1"),
+    23000: ("Overslag og hoderegning", "Nivå 2"),
+    24000: ("Overslag og hoderegning", "Nivå 3"),
+    25000: ("Forhold og brøk–desimal–prosent", "Nivå 1"),
+    26000: ("Forhold og brøk–desimal–prosent", "Nivå 2"),
+    27000: ("Forhold og brøk–desimal–prosent", "Nivå 3"),
     28000: ("Variabler", "Nivå 1"),
     29000: ("Variabler", "Nivå 2"),
     30000: ("Variabler", "Nivå 3"),
-    31000: ("Enkle uttrykk", "Nivå 1"),
-    32000: ("Enkle uttrykk", "Nivå 2"),
-    33000: ("Enkle uttrykk", "Nivå 3"),
-    34000: ("Regning uttrykk", "Nivå 1"),
-    35000: ("Regning uttrykk", "Nivå 2"),
-    36000: ("Regning uttrykk", "Nivå 3"),
+    31000: ("Enkle algebraiske uttrykk", "Nivå 1"),
+    32000: ("Enkle algebraiske uttrykk", "Nivå 2"),
+    33000: ("Enkle algebraiske uttrykk", "Nivå 3"),
+    34000: ("Regning med uttrykk", "Nivå 1"),
+    35000: ("Regning med uttrykk", "Nivå 2"),
+    36000: ("Regning med uttrykk", "Nivå 3"),
     37000: ("Likninger", "Nivå 1"),
     38000: ("Likninger", "Nivå 2"),
     39000: ("Likninger", "Nivå 3"),
@@ -5479,9 +5506,9 @@ TOPIC_MAP = {
     43000: ("Tall og symboler", "Nivå 1"),
     44000: ("Tall og symboler", "Nivå 2"),
     45000: ("Tall og symboler", "Nivå 3"),
-    46000: ("Sammenheng", "Nivå 1"),
-    47000: ("Sammenheng", "Nivå 2"),
-    48000: ("Sammenheng", "Nivå 3"),
+    46000: ("Sammenheng mellom to størrelser", "Nivå 1"),
+    47000: ("Sammenheng mellom to størrelser", "Nivå 2"),
+    48000: ("Sammenheng mellom to størrelser", "Nivå 3"),
     49000: ("Funksjonstabeller", "Nivå 1"),
     50000: ("Funksjonstabeller", "Nivå 2"),
     51000: ("Funksjonstabeller", "Nivå 3"),
@@ -5600,12 +5627,49 @@ def laerer_klasse(klasse_id):
     topic_avg.sort(key=lambda x: x[1])
     svake_temaer = topic_avg[:5]  # top 5 weakest
 
+    # Tildelinger (oppgaver gitt til klassen) + fremgang per elev
+    tildelinger_rows = conn.execute(
+        "SELECT * FROM tildelinger WHERE klasse_id = ? ORDER BY id DESC",
+        (klasse_id,)
+    ).fetchall()
+
+    tildelinger = []
+    for t in tildelinger_rows:
+        id_base = t["id_base"]
+        ferdige = 0
+        for elev in elever:
+            rows = conn.execute(
+                "SELECT COUNT(*) as cnt FROM progress WHERE user_id = ? AND status = 'riktig' "
+                "AND oppgave_id > ? AND oppgave_id <= ?",
+                (elev["id"], id_base, id_base + 200)
+            ).fetchone()
+            if rows["cnt"] >= 5:  # anses som "i gang/ferdig" ved minst 5 riktige
+                ferdige += 1
+        tildelinger.append({
+            "id": t["id"],
+            "tema": t["tema"],
+            "nivaa": t["nivaa"],
+            "frist": t["frist"],
+            "melding": t["melding"],
+            "opprettet": t["opprettet"],
+            "ferdige": ferdige,
+            "totalt": len(elever),
+        })
+
+    # Liste over alle temaer/nivåer for tildelings-dropdown
+    alle_temaer = sorted(
+        [(base, tema, nivaa) for base, (tema, nivaa) in TOPIC_MAP.items() if base > 1],
+        key=lambda x: (x[1], x[2])
+    )
+
     return render_template("laerer_klasse.html",
         klasse=klasse,
         elever=elever,
         elev_topics=elev_topics,
         alle_brukere=alle_brukere,
-        svake_temaer=svake_temaer
+        svake_temaer=svake_temaer,
+        tildelinger=tildelinger,
+        alle_temaer=alle_temaer
     )
 
 
@@ -5654,9 +5718,54 @@ def laerer_slett_klasse(klasse_id):
     if not klasse:
         return redirect("/laerer")
     conn.execute("DELETE FROM klasse_elever WHERE klasse_id = ?", (klasse_id,))
+    conn.execute("DELETE FROM tildelinger WHERE klasse_id = ?", (klasse_id,))
     conn.execute("DELETE FROM klasser WHERE id = ?", (klasse_id,))
     conn.commit()
     return redirect("/laerer")
+
+
+@app.route("/laerer/klasse/<int:klasse_id>/tildel", methods=["POST"])
+@login_required
+@teacher_required
+def laerer_tildel(klasse_id):
+    conn = get_db()
+    klasse = conn.execute("SELECT * FROM klasser WHERE id = ? AND laerer_id = ?",
+                          (klasse_id, session["user_id"])).fetchone()
+    if not klasse:
+        return redirect("/laerer")
+
+    tema_nivaa = request.form.get("tema_nivaa", "")  # format: "id_base|Tema|Nivå X"
+    melding = request.form.get("melding", "").strip()
+
+    # Bygg frist-dato fra dag/måned/år-felter (norsk format)
+    dag = request.form.get("frist_dag", "").strip()
+    maaned = request.form.get("frist_maaned", "").strip()
+    aar = request.form.get("frist_aar", "").strip()
+    frist = f"{aar}-{maaned}-{dag}" if dag and maaned and aar else None
+
+    if "|" in tema_nivaa:
+        id_base_str, tema, nivaa = tema_nivaa.split("|", 2)
+        conn.execute(
+            "INSERT INTO tildelinger (klasse_id, laerer_id, tema, nivaa, id_base, frist, melding) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (klasse_id, session["user_id"], tema, nivaa, int(id_base_str), frist, melding or None)
+        )
+        conn.commit()
+    return redirect(f"/laerer/klasse/{klasse_id}")
+
+
+@app.route("/laerer/klasse/<int:klasse_id>/tildel/<int:tildeling_id>/slett", methods=["POST"])
+@login_required
+@teacher_required
+def laerer_slett_tildeling(klasse_id, tildeling_id):
+    conn = get_db()
+    klasse = conn.execute("SELECT * FROM klasser WHERE id = ? AND laerer_id = ?",
+                          (klasse_id, session["user_id"])).fetchone()
+    if not klasse:
+        return redirect("/laerer")
+    conn.execute("DELETE FROM tildelinger WHERE id = ? AND klasse_id = ?", (tildeling_id, klasse_id))
+    conn.commit()
+    return redirect(f"/laerer/klasse/{klasse_id}")
 
 
 # START SERVER

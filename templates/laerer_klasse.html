@@ -59,6 +59,90 @@
     </div>
     {% endif %}
 
+    <!-- TILDELINGER -->
+    <div class="admin-table-card" style="margin-bottom:28px;">
+        <h2 class="admin-table-title">📌 Gi oppgave til klassen</h2>
+        <p style="opacity:.6;font-size:.9rem;margin:8px 0 16px;">
+            Velg et tema og nivå klassen skal øve på. Elevene ser dette på sin egen side.
+        </p>
+        <form method="POST" action="/laerer/klasse/{{ klasse.id }}/tildel"
+              style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+            <div style="flex:1;min-width:220px;">
+                <label style="display:block;font-size:.8rem;opacity:.6;margin-bottom:4px;">Tema og nivå</label>
+                <select name="tema_nivaa" class="admin-input" style="width:100%;" required>
+                    {% for id_base, tema, nivaa in alle_temaer %}
+                    <option value="{{ id_base }}|{{ tema }}|{{ nivaa }}">{{ tema }} – {{ nivaa }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label style="display:block;font-size:.8rem;opacity:.6;margin-bottom:4px;">Frist (valgfritt)</label>
+                <div style="display:flex;gap:4px;">
+                    <select name="frist_dag" class="admin-input" style="width:64px;">
+                        <option value="" disabled selected>Dag</option>
+                        {% for d in range(1, 32) %}
+                        <option value="{{ '%02d' % d }}">{{ d }}</option>
+                        {% endfor %}
+                    </select>
+                    <select name="frist_maaned" class="admin-input" style="width:120px;">
+                        <option value="" disabled selected>Måned</option>
+                        <option value="01">januar</option>
+                        <option value="02">februar</option>
+                        <option value="03">mars</option>
+                        <option value="04">april</option>
+                        <option value="05">mai</option>
+                        <option value="06">juni</option>
+                        <option value="07">juli</option>
+                        <option value="08">august</option>
+                        <option value="09">september</option>
+                        <option value="10">oktober</option>
+                        <option value="11">november</option>
+                        <option value="12">desember</option>
+                    </select>
+                    <select name="frist_aar" class="admin-input" style="width:90px;">
+                        <option value="" disabled selected>År</option>
+                        {% for y in range(2026, 2032) %}
+                        <option value="{{ y }}">{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div style="flex:1;min-width:200px;">
+                <label style="display:block;font-size:.8rem;opacity:.6;margin-bottom:4px;">Melding (valgfritt)</label>
+                <input type="text" name="melding" class="admin-input" style="width:100%;"
+                       placeholder="F.eks. 'Øv før prøven fredag'">
+            </div>
+            <button type="submit" class="admin-action-btn admin-btn-blue">📌 Tildel</button>
+        </form>
+
+        {% if tildelinger %}
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:24px;">
+            {% for t in tildelinger %}
+            <div class="laerer-tildeling-rad">
+                <div style="flex:1;">
+                    <div style="font-weight:700;">{{ t.tema }} – {{ t.nivaa }}</div>
+                    <div style="font-size:.8rem;opacity:.6;">
+                        {% if t.frist %}Frist: {{ t.frist }} &nbsp;·&nbsp;{% endif %}
+                        {% if t.melding %}«{{ t.melding }}» &nbsp;·&nbsp;{% endif %}
+                        Gitt {{ t.opprettet[:10] }}
+                    </div>
+                </div>
+                <div class="laerer-tildeling-progress">
+                    <div class="laerer-svak-bar-wrap" style="width:140px;">
+                        <div class="laerer-svak-bar" style="background:linear-gradient(90deg,#0d6efd,#6610f2);width:{{ (t.ferdige / t.totalt * 100) if t.totalt else 0 }}%"></div>
+                    </div>
+                    <span style="font-size:.82rem;opacity:.7;white-space:nowrap;">{{ t.ferdige }}/{{ t.totalt }} ferdig</span>
+                </div>
+                <form method="POST" action="/laerer/klasse/{{ klasse.id }}/tildel/{{ t.id }}/slett"
+                      onsubmit="return confirm('Fjern denne tildelingen?')">
+                    <button type="submit" class="admin-action-btn admin-btn-red" style="font-size:.8rem;padding:5px 10px;">🗑️</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
     <!-- ELEV-TABELL -->
     <div class="admin-table-card" style="margin-bottom:28px;">
         <h2 class="admin-table-title">📊 Elevenes fremgang</h2>

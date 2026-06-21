@@ -60,3 +60,21 @@ CREATE TABLE IF NOT EXISTS klasse_elever (
 conn.commit()
 conn.close()
 print("Lærer-tabeller lagt til!")
+
+# 6. TILDELINGER (lærer gir oppgaver til klasse)
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS tildelinger (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    klasse_id INTEGER NOT NULL,
+    laerer_id INTEGER NOT NULL,
+    tema TEXT NOT NULL,
+    nivaa TEXT NOT NULL,
+    id_base INTEGER NOT NULL,
+    frist TEXT,
+    melding TEXT,
+    opprettet TEXT DEFAULT (datetime('now'))
+)
+""")
+conn.commit()
+conn.close()
+print("Tildelinger-tabell lagt til!")
