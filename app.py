@@ -5783,6 +5783,167 @@ def laerer_slett_tildeling(klasse_id, tildeling_id):
     return redirect(f"/laerer/klasse/{klasse_id}")
 
 
+
+# ============================================================
+# PDF-EKSPORT FOR LÆRERRAPPORT
+# ============================================================
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import cm
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
+import io
+from flask import make_response
+from datetime import datetime as _dt
+
+@app.route("/laerer/klasse/<int:klasse_id>/rapport.pdf")
+@login_required
+@teacher_required
+def laerer_pdf_rapport(klasse_id):
+    conn = get_db()
+    klasse = conn.execute("SELECT * FROM klasser WHERE id = ? AND laerer_id = ?",
+                          (klasse_id, session["user_id"])).fetchone()
+    if not klasse:
+        return redirect("/laerer")
+
+    elever = conn.execute(
+        "SELECT u.id, u.username, COUNT(p.id) as totalt_loste "
+        "FROM klasse_elever ke JOIN users u ON u.id = ke.elev_id "
+        "LEFT JOIN progress p ON p.user_id = u.id "
+        "WHERE ke.klasse_id = ? GROUP BY u.id ORDER BY u.username",
+        (klasse_id,)
+    ).fetchall()
+
+    # Bygg progress per elev
+    elev_data = []
+    for elev in elever:
+        rows = conn.execute(
+            "SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'",
+            (elev["id"],)
+        ).fetchall()
+        topic_count = {}
+        for r in rows:
+            tema, nivaa = oppgave_id_to_topic(r["oppgave_id"])
+            key = f"{tema} – {nivaa}"
+            topic_count[key] = topic_count.get(key, 0) + 1
+
+        sorted_topics = sorted(topic_count.items(), key=lambda x: x[1], reverse=True)
+        beste = sorted_topics[0][0] if sorted_topics else "–"
+        svakeste = sorted_topics[-1][0] if len(sorted_topics) > 1 else "–"
+        elev_data.append({
+            "navn": elev["username"],
+            "totalt": elev["totalt_loste"],
+            "beste": beste,
+            "svakeste": svakeste,
+        })
+
+    # Svake temaer for hele klassen
+    all_topic_counts = {}
+    for elev in elever:
+        rows = conn.execute(
+            "SELECT oppgave_id FROM progress WHERE user_id = ? AND status = 'riktig'",
+            (elev["id"],)
+        ).fetchall()
+        for r in rows:
+            tema, nivaa = oppgave_id_to_topic(r["oppgave_id"])
+            key = f"{tema} – {nivaa}"
+            all_topic_counts[key] = all_topic_counts.get(key, 0) + 1
+
+    topic_avg = sorted(
+        [(t, round(c / len(elever), 1)) for t, c in all_topic_counts.items() if elever],
+        key=lambda x: x[1]
+    )
+    svake_temaer = topic_avg[:5]
+
+    # ---- Bygg PDF ----
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer, pagesize=A4,
+        topMargin=2*cm, bottomMargin=2*cm,
+        leftMargin=2*cm, rightMargin=2*cm
+    )
+
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle("Title", fontSize=20, fontName="Helvetica-Bold",
+                                  spaceAfter=6, alignment=TA_LEFT)
+    sub_style   = ParagraphStyle("Sub",   fontSize=11, fontName="Helvetica",
+                                  textColor=colors.HexColor("#6c757d"), spaceAfter=16)
+    h2_style    = ParagraphStyle("H2",    fontSize=13, fontName="Helvetica-Bold",
+                                  spaceBefore=16, spaceAfter=8)
+    normal      = ParagraphStyle("N",     fontSize=9, fontName="Helvetica", leading=13)
+
+    dato = _dt.now().strftime("%d.%m.%Y")
+    story = [
+        Paragraph(f"Klasserapport – {klasse['navn']}", title_style),
+        Paragraph(f"Generert {dato}  ·  Lærer: {session['username']}  ·  Elever: {len(elever)}", sub_style),
+        HRFlowable(width="100%", thickness=1, color=colors.HexColor("#dee2e6")),
+        Spacer(1, 0.4*cm),
+    ]
+
+    # Statistikk-linje
+    totalt_loste = sum(e["totalt"] for e in elev_data)
+    story += [
+        Paragraph("📊 Klasseoversikt", h2_style),
+        Paragraph(f"Totalt løste oppgaver: <b>{totalt_loste}</b>  ·  Gjennomsnitt per elev: <b>{round(totalt_loste / len(elever), 1) if elever else 0}</b>", normal),
+        Spacer(1, 0.3*cm),
+    ]
+
+    # Tabell over elever
+    story.append(Paragraph("👨‍🎓 Fremgang per elev", h2_style))
+    header = ["Elev", "Løste oppg.", "Beste tema", "Svakeste tema"]
+    rows_pdf = [header]
+    for e in elev_data:
+        rows_pdf.append([
+            e["navn"],
+            str(e["totalt"]),
+            Paragraph(e["beste"][:40], normal),
+            Paragraph(e["svakeste"][:40], normal),
+        ])
+
+    t = Table(rows_pdf, colWidths=[4*cm, 2.5*cm, 6*cm, 5*cm], repeatRows=1)
+    t.setStyle(TableStyle([
+        ("BACKGROUND",   (0, 0), (-1, 0),  colors.HexColor("#0d6efd")),
+        ("TEXTCOLOR",    (0, 0), (-1, 0),  colors.white),
+        ("FONTNAME",     (0, 0), (-1, 0),  "Helvetica-Bold"),
+        ("FONTSIZE",     (0, 0), (-1, 0),  9),
+        ("FONTNAME",     (0, 1), (-1, -1), "Helvetica"),
+        ("FONTSIZE",     (0, 1), (-1, -1), 8),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f8f9fa")]),
+        ("GRID",         (0, 0), (-1, -1), 0.4, colors.HexColor("#dee2e6")),
+        ("ALIGN",        (1, 0), (1, -1),  "CENTER"),
+        ("VALIGN",       (0, 0), (-1, -1), "MIDDLE"),
+        ("TOPPADDING",   (0, 0), (-1, -1), 5),
+        ("BOTTOMPADDING",(0, 0), (-1, -1), 5),
+    ]))
+    story.append(t)
+
+    # Svake temaer
+    if svake_temaer:
+        story += [
+            Spacer(1, 0.4*cm),
+            Paragraph("⚠️ Svakeste temaer i klassen", h2_style),
+        ]
+        for i, (tema, snitt) in enumerate(svake_temaer, 1):
+            story.append(Paragraph(f"{i}. {tema} – gjennomsnitt {snitt} oppg. per elev", normal))
+
+    story.append(Spacer(1, 0.6*cm))
+    story.append(HRFlowable(width="100%", thickness=0.5, color=colors.HexColor("#dee2e6")))
+    story.append(Paragraph(
+        f"<font color='#aaaaaa' size='8'>Rapport generert av Mono Matematikk  ·  {dato}</font>",
+        ParagraphStyle("footer", alignment=TA_CENTER, spaceBefore=6)
+    ))
+
+    doc.build(story)
+    buffer.seek(0)
+
+    filnavn = f"rapport_{klasse['navn'].replace(' ', '_')}_{dato}.pdf"
+    response = make_response(buffer.read())
+    response.headers["Content-Type"] = "application/pdf"
+    response.headers["Content-Disposition"] = f"attachment; filename={filnavn}"
+    return response
+
+
 # START SERVER
 if __name__ == '__main__':
     app.run(debug=True)
