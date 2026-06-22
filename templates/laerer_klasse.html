@@ -12,6 +12,11 @@
     <div class="db-header">
         <span class="db-logo">🏫 {{ klasse.navn }}</span>
         <div class="db-header-right">
+            <a href="/laerer/klasse/{{ klasse.id }}/rapport.pdf"
+               class="db-nav-btn"
+               style="background:linear-gradient(135deg,#198754,#0d6efd);color:white;border:none;">
+                📄 Last ned rapport
+            </a>
             <a href="/laerer" class="db-nav-btn">← Mine klasser</a>
             <a href="/logout" class="db-nav-btn db-nav-logout">Logg ut</a>
         </div>
@@ -34,6 +39,24 @@
             <div class="db-stat-number">{{ svake_temaer|length }}</div>
             <div class="db-stat-label">Svake temaer identifisert</div>
         </div>
+    </div>
+
+    <!-- FREMGANG OVER TID -->
+    <div class="admin-table-card" style="margin-bottom:28px;">
+        <h2 class="admin-table-title">📈 Fremgang over tid</h2>
+        <p style="opacity:.6;font-size:.9rem;margin:8px 0 16px;">
+            Antall riktig løste oppgaver per uke for hele klassen, siste 8 uker.
+        </p>
+        {% if uke_data and uke_data|length > 0 %}
+        <div style="max-width:100%;height:260px;">
+            <canvas id="ukeChart"></canvas>
+        </div>
+        {% else %}
+        <div style="text-align:center;padding:30px;opacity:.5;">
+            <div style="font-size:2.4rem;margin-bottom:8px;">📭</div>
+            <div>Ingen aktivitet registrert ennå denne perioden.</div>
+        </div>
+        {% endif %}
     </div>
 
     <!-- SVAKE TEMAER -->
@@ -249,5 +272,46 @@
     </div>
 
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+{% if uke_data and uke_data|length > 0 %}
+const ukeLabels = {{ uke_data|map(attribute='uke')|list|tojson }};
+const ukeAntall = {{ uke_data|map(attribute='antall')|list|tojson }};
+
+const ctx = document.getElementById('ukeChart').getContext('2d');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: ukeLabels,
+        datasets: [{
+            label: 'Løste oppgaver',
+            data: ukeAntall,
+            borderColor: '#0d6efd',
+            backgroundColor: 'rgba(13,110,253,0.12)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.3,
+            pointBackgroundColor: '#0d6efd',
+            pointRadius: 5,
+            pointHoverRadius: 7,
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: { precision: 0 }
+            }
+        }
+    }
+});
+{% endif %}
+</script>
 </body>
 </html>

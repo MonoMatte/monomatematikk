@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS progress (
     user_id INTEGER NOT NULL,
     oppgave_id INTEGER NOT NULL,
     status TEXT NOT NULL,
+    timestamp TEXT DEFAULT (datetime('now')),
     UNIQUE(user_id, oppgave_id)
 )
 """)

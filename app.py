@@ -363,7 +363,7 @@ def regnerekkefolge_nivaa1_route():
         if svar == fasit:
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], nummer, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], nummer, "riktig"))
             conn.commit()
             riktige_oppgaver.add(nummer)
         elif svar == "67":
@@ -421,7 +421,7 @@ def regnerekkefolge_nivaa2_route():
         if svar == fasit:
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         elif svar == "67":
@@ -484,7 +484,7 @@ def regnerekkefolge_nivaa3_route():
         if svar == fasit:
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         elif svar == "67":
@@ -558,7 +558,7 @@ def hele_tall_nivaa1_route():
         if svar == fasit:
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         elif svar == "67":
@@ -618,7 +618,7 @@ def hele_tall_nivaa2_route():
         if svar == fasit:
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         elif svar == "67":
@@ -678,7 +678,7 @@ def hele_tall_nivaa3_route():
         if svar == fasit:
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         elif svar == "67":
@@ -748,7 +748,7 @@ def desimaltall_nivaa1_route():
         if svar == fasit:
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         elif svar == "67":
@@ -807,7 +807,7 @@ def desimaltall_nivaa2_route():
         if svar == fasit:
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         elif svar == "67":
@@ -871,7 +871,7 @@ def desimaltall_nivaa3_route():
         if svar == fasit:
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         elif svar == "67":
@@ -945,7 +945,7 @@ def prosent_nivaa1_route():
         if svar == fasit:
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         elif svar == "67":
@@ -1009,7 +1009,7 @@ def prosent_nivaa2_route():
         if svar == fasit:
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         elif svar == "67":
@@ -1089,7 +1089,7 @@ def prosent_nivaa3_route():
         if svar == fasit_norm:
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         elif svar == "67":
@@ -1158,7 +1158,7 @@ def negative_tall_nivaa1_route():
         if svar == fasit:
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         elif svar == "67":
@@ -1217,7 +1217,7 @@ def negative_tall_nivaa2_route():
         if svar == fasit:
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         elif svar == "67":
@@ -1281,7 +1281,7 @@ def negative_tall_nivaa3_route():
         if svar == fasit:
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         elif svar == "67":
@@ -1430,7 +1430,7 @@ def brok_nivaa1_route():
         if ok:
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         elif not resultat:
@@ -1525,7 +1525,7 @@ def brok_nivaa2_route():
         if ok:
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         elif not resultat:
@@ -1620,7 +1620,7 @@ def brok_nivaa3_route():
         if ok:
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         elif not resultat:
@@ -1735,7 +1735,7 @@ def potenser_nivaa1_route():
         elif svar == fasit:
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         else:
@@ -1819,7 +1819,7 @@ def potenser_nivaa2_route():
         elif svar == fasit:
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         else:
@@ -1903,7 +1903,7 @@ def potenser_nivaa3_route():
         elif svar == fasit:
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         else:
@@ -1995,7 +1995,7 @@ def overslag_nivaa1_route():
         elif svar == fasit_norm:
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         else:
@@ -2077,7 +2077,7 @@ def overslag_nivaa2_route():
         elif svar == fasit_norm:
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         else:
@@ -2159,7 +2159,7 @@ def overslag_nivaa3_route():
         elif svar == fasit_norm:
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         else:
@@ -2259,7 +2259,7 @@ def forhold_nivaa1_route():
         elif svar.lower() == fasit_norm.lower():
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         else:
@@ -2341,7 +2341,7 @@ def forhold_nivaa2_route():
         elif svar.lower() == fasit_norm.lower():
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         else:
@@ -2423,7 +2423,7 @@ def forhold_nivaa3_route():
         elif svar.lower() == fasit_norm.lower():
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         else:
@@ -2524,7 +2524,7 @@ def variabler_nivaa1_route():
         elif svar.lower() == fasit.lower():
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         else:
@@ -2605,7 +2605,7 @@ def variabler_nivaa2_route():
         elif svar.lower() == fasit.lower():
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         else:
@@ -2686,7 +2686,7 @@ def variabler_nivaa3_route():
         elif svar.lower() == fasit.lower():
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         else:
@@ -2778,7 +2778,7 @@ def enkle_uttrykk_nivaa1_route():
         elif svar.lower() == fasit.lower():
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         else:
@@ -2859,7 +2859,7 @@ def enkle_uttrykk_nivaa2_route():
         elif svar.lower().replace(" ", "") == fasit.lower().replace(" ", ""):
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         else:
@@ -2940,7 +2940,7 @@ def enkle_uttrykk_nivaa3_route():
         elif svar.lower().replace(" ", "") == fasit.lower().replace(" ", ""):
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         else:
@@ -3032,7 +3032,7 @@ def regning_uttrykk_nivaa1_route():
         elif svar.lower().replace(" ", "") == fasit.lower().replace(" ", ""):
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         else:
@@ -3113,7 +3113,7 @@ def regning_uttrykk_nivaa2_route():
         elif svar.lower().replace(" ", "") == fasit.lower().replace(" ", ""):
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         else:
@@ -3194,7 +3194,7 @@ def regning_uttrykk_nivaa3_route():
         elif svar.lower().replace(" ", "") == fasit.lower().replace(" ", ""):
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         else:
@@ -3286,7 +3286,7 @@ def likninger_nivaa1_route():
         elif svar == fasit:
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         else:
@@ -3368,7 +3368,7 @@ def likninger_nivaa2_route():
         elif svar == fasit_norm:
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         else:
@@ -3450,7 +3450,7 @@ def likninger_nivaa3_route():
         elif svar == fasit_norm:
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)", (session["user_id"], oppgave_id, "riktig"))
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))", (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
         else:
@@ -3643,7 +3643,7 @@ def kjor_sette_inn(oppgaver, id_base, template_navn, link_prefix):
         if ok:
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)",
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))",
                 (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
@@ -4574,7 +4574,7 @@ def kjor_funkstabell(oppgaver, id_base, template_navn, link_prefix):
         if ok:
             resultat = "✅ Riktig!"
             riktig = True
-            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status) VALUES (?, ?, ?)",
+            conn.execute("INSERT OR REPLACE INTO progress (user_id, oppgave_id, status, timestamp) VALUES (?, ?, ?, datetime('now'))",
                 (session["user_id"], oppgave_id, "riktig"))
             conn.commit()
             riktige_oppgaver.add(oppgave_id)
@@ -5662,6 +5662,20 @@ def laerer_klasse(klasse_id):
         key=lambda x: (x[1], x[2])
     )
 
+    # Fremgang over tid – løste oppgaver per uke, siste 8 uker, for hele klassen
+    elev_ider = [e["id"] for e in elever]
+    uke_data = []
+    if elev_ider:
+        placeholders = ",".join("?" * len(elev_ider))
+        rows = conn.execute(
+            f"SELECT strftime('%Y-W%W', timestamp) as uke, COUNT(*) as antall "
+            f"FROM progress WHERE user_id IN ({placeholders}) AND status = 'riktig' "
+            f"AND timestamp >= datetime('now', '-56 days') "
+            f"GROUP BY uke ORDER BY uke ASC",
+            elev_ider
+        ).fetchall()
+        uke_data = [{"uke": r["uke"], "antall": r["antall"]} for r in rows]
+
     return render_template("laerer_klasse.html",
         klasse=klasse,
         elever=elever,
@@ -5669,7 +5683,8 @@ def laerer_klasse(klasse_id):
         alle_brukere=alle_brukere,
         svake_temaer=svake_temaer,
         tildelinger=tildelinger,
-        alle_temaer=alle_temaer
+        alle_temaer=alle_temaer,
+        uke_data=uke_data
     )
 
 
